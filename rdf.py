@@ -2,7 +2,7 @@
 
 '''
     Calculation: Radial Distribution Function (RDF).
-    Description:
+    Description: todo en Angstrom!
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: July, 2021.
 '''
@@ -17,15 +17,13 @@ def init(xsf = 'example.xsf'):
         * rows: number of rows with relevant information per snapshot.
         * idAt: list of elements' names.
         * steps: total number of snapshots.
-        * cell: cell dimensions.
+        * cell: cell dimensions along x (Lx), y (Ly) and z (Lz).
         * snaps: dataframe with idAt and positions for the nAt in the steps snapshots
-
-    ver si puedo eliminar esas 2 filas extras!
     '''
 
     nAt = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 7, nrows = 1).to_numpy()[0][0]
 
-    rows = nAt + 2
+    rows = nAt + 2 # ver si puedo eliminar esas 2 filas extras!
 
     idAt = pd.read_csv(xsf, header = None, names = ['idAt'], delim_whitespace = True, skiprows = 8, usecols = [0], nrows = nAt).drop_duplicates()['idAt'].values.tolist()
 
@@ -33,9 +31,11 @@ def init(xsf = 'example.xsf'):
 
     cell = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 3, nrows = 3).to_numpy()
 
+    Lx, Ly, Lz = cell[0][0], cell[1][1], cell[2][2]
+
     snaps = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 6, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz'])
 
-    return nAt, rows, idAt, steps, cell, snaps
+    return nAt, rows, idAt, steps, Lx, Ly, Lz, snaps
 
 def min_im(coord, length):
     '''
@@ -44,19 +44,17 @@ def min_im(coord, length):
 
     if coord < -0.5 * length:
         coord += length
-    elif coord >= 0.5 * length:
+    elif coord > 0.5 * length:
         coord -= length
 
     return coord
 
-def hist_up(nAt, cell, xyz, dr, Rcut, H):
+def hist_up(Rcut, Lx, Ly, Lz, xyz, nAt, dr, RDF):
     '''
     Updates histogram information with current snapshot.
     '''
 
     Rcut2 = Rcut * Rcut
-
-    Lx, Ly, Lz = cell[0][0], cell[1][1], cell[2][2]
 
     label = np.array(xyz[:,0])
     rx = np.array(xyz[:,1])
@@ -76,42 +74,45 @@ def hist_up(nAt, cell, xyz, dr, Rcut, H):
 
             r2 = dx * dx + dy * dy + dz * dz
 
-            if r2 < Rcut2:
+            if r2 <= Rcut2:
                 bin = int(np.sqrt(r2)/dr)
-                H[bin] += 2 # no sé bien por qué suma 2 y no 1
+                RDF[bin] += 2 # no sé bien por qué suma 2 y no 1 ! - dice que 2 es la contribución de las partículas
 
-def normalize(dr, rho):
+def normalize(nBin, dr, RDF, nRDF, nAt, f):
     '''
     Normalize de function.
     '''
 
-    for i in range(nB):
+    rho=0.85 # densidad!
+
+    for i in range(nBin):
         r = dr * (i + 0.5) # Distance
-        vb = ( (i+1) * (i+1) * (i+1) - i*i*i ) * dr*dr*dr # volume between bin i and i+1
-        nid = (4/3) * np.pi * vb * rho
+        vBin = ( (i+1) * (i+1) * (i+1) - i*i*i ) * dr*dr*dr # volume between bin i and bin i+1
+        nId = (4/3) * np.pi * vBin * rho # number of ideal particles in vBin
+        RDF[i] /= nRDF * nAt * nId
+
+        f.write(f'{dr*i:.3} \t {RDF[i]:.4} \n')
 
 def main():
 
-    nAt, rows, idAt, steps, cell, snaps = init()
-    Rcut = 10 # Angstrom
-    dr = 0.1 # Angstrom
-    nB = int(Rcut/dr) + 1 # Total number of bins
-    H = np.zeros(nB, dtype=int)
+    nAt, rows, idAt, steps, Lx, Ly, Lz, snaps = init()
 
-    rho=0.85
-    ngr = 0
+    Rcut = 10 # maximum radius to be considered
+    dr = 0.1 # bin size
+    nBin = int(Rcut/dr) + 1 # number of bins
+    RDF = np.zeros(nBin) # initialize array of zeros for RDF
+    nRDF = 0 # number of snapshots used
 
-    # for i in range(steps):
-    for i in range(1):
-        ngr += 1
-        start = i*rows + 2
-        end = rows*(i+1)
-        xyz = snaps.iloc[start:end].to_numpy()
-
-    # faltan cosas acá
-
-
-
+    with open(f'rdf.dat', 'w') as f:
+        for i in range(steps):
+        # for i in range(1):
+            nRDF += 1
+            start = i*rows + 2
+            end = rows*(i+1)
+            xyz = snaps.iloc[start:end].to_numpy()
+            hist_up(Rcut, Lx, Ly, Lz, xyz, nAt, dr, RDF)
+        
+        RDF = normalize(nBin, dr, RDF, nRDF, nAt, f)
 
 if __name__ == "__main__":
     main()
