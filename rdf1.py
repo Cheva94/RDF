@@ -1,148 +1,132 @@
 #!/usr/local/bin/python3.9
 
-'''
-    Calculation: Radial Distribution Function (RDF).
-    Description: todo en Angstrom!
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: July, 2021.
-'''
-
 import pandas as pd
 import numpy as np
 
+def user_input():
+    '''
+    PREGUNTAS AL USUARIO
+    '''
+
+    # Sistema a estudiar
+    xyz = pd.read_csv('example1_xyz.xsf', header = None, delim_whitespace = True, skiprows = 2, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz'])
+    nAt = 103
+    idAt = ['O', 'Si', 'Pt', 'H']
+    Lx, Ly, Lz = 10.5599958569, 14.9399970185, 21.9999878486
+    # xyz = pd.read_csv('example1_xyz.xsf', header = None, delim_whitespace = True, skiprows = 2, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz']).to_numpy()
+
+    # Átomos a comparar - Si con O del agua (Pt)
+    at1 = 'Si'
+    at2 = 'Pt'
+
+    # Filtro el archivo con los átomos seleccionados
+    xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
+    xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
+
+    # Frames a medir
+
+    # Parámetros del histograma
+    dr = 0.1 # bin size (incremento)
+    Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
+
+    # Output filename
+    filename = 'example1_NC'
+    return Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, filename
+
+def hist_init(dr, Rcut):
+    '''
+    Inicialización del histograma
+    '''
+    nBin = int(Rcut/dr) + 1 # number of bins
+    Rcut = nBin * dr # Reajusta el máximo cuando no es un múltiplo entero del incremento.
+    RDF = np.zeros(nBin) # initialize array of zeros for RDF. RDF es el histograma en sí mismo. mucho muy imporante
+    return nBin, Rcut, RDF
+
+def PBC(dist, length):
+    '''
+    Correct a distance dist accoring to periodic boundary conditions length.
+    '''
+
+    if dist < -0.5 * length:
+        dist += length
+    elif dist > 0.5 * length:
+        dist -= length
+
+    return dist
+
+def hist_up(data, dr, H):
+    '''
+    Updates an existing histogram.
+    '''
+
+    binIdx = int(np.sqrt(data)/dr)
+    H[binIdx] += 2 # no sé bien por qué suma 2 y no 1 ! - dice que 2 es la contribución de las partículas pero en el código decía +1 . porque son dos contribuyendo (o sea i ve a j y despues j ve a i)
+
+def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF):
+    Rcut2 = Rcut * Rcut
+
+    rx1 = np.array(xyz1[:,1])
+    ry1 = np.array(xyz1[:,2])
+    rz1 = np.array(xyz1[:,3])
+
+    rx2 = np.array(xyz2[:,1])
+    ry2 = np.array(xyz2[:,2])
+    rz2 = np.array(xyz2[:,3])
+
+    nAt1 = len(rx1)
+    nAt2 = len(rx2)
+
+    # Aplicación de PBC y actualización del histograma
+    # No estoy considerando duplicados si midiera el mismo átomo contra sí mismo
+    # Frenkel usa las PBC de manera diferente
+    for i in range(nAt1):
+        for j in range(nAt2):
+            dx = rx1[i] - rx2[j]
+            dx = PBC(dx, Lx)
+
+            dy = ry1[i] - ry2[j]
+            dy = PBC(dy, Ly)
+
+            dz = rz1[i] - rz2[j]
+            dz = PBC(dz, Lz)
+
+            r2 = dx * dx + dy * dy + dz * dz
+
+            if r2 <= Rcut2: # acá tiene 0.5 L siendo L el largo de la caja # Ver si va a ser contado y contar
+                hist_up(r2, dr, RDF)
+
+    return nAt1, nAt2
+
+def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames, RDF, filename):
+
+    ## Cálculo de la g(r) - determine g(r)
+
+    # Normalizamos cada bin por su volumen ya que a mayores distancias se espera un mayor conteo, incluso para el caso ideal. ¿Porque dividimos por nAt?
+
+    nAtTot = nAt1 + nAt2
+    rho = nAtTot / (Lx * Ly * Lz) # densidad de partículas (caso ideal) - densidad uniforme
+    prefact = 4 * np.pi # para no estar calculandolo todas las veces. Omito el dividido 3 porque aproximo a primer orden --- considerando que la distancia es r = dr * (i + 0.5)
+    dr3 = dr * dr * dr
+
+    with open(f'{filename}.dat', 'w') as f:
+        for binIdx in range(nBin):
+            # volBin = prefact * ( (binIdx+1) * (binIdx+1) * (binIdx+1) - binIdx * binIdx * binIdx ) * dr3 # frenkel
+            volBin = prefact * ( (binIdx + 0.5) * (binIdx + 0.5) ) * dr3 # volume between bin i and bin i+1
+            nIdeal = volBin * rho
+            RDF[binIdx] /= frames * nIdeal * nAtTot
+            f.write(f'{RDF[binIdx]} \n')
+
 def main():
-    xsf = 'example1.xsf'
 
-    nAt = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 7, nrows = 1).to_numpy()[0][0]
+    Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, filename = user_input()
 
-    rows = nAt + 2 # ver si puedo eliminar esas 2 filas extras!
+    nBin, Rcut, RDF = hist_init(dr, Rcut)
 
-    idAt = pd.read_csv(xsf, header = None, names = ['idAt'], delim_whitespace = True, skiprows = 8, usecols = [0], nrows = nAt).drop_duplicates()['idAt'].values.tolist()
+    frames = 1 # Contador de frames
 
-    steps = pd.read_csv(xsf, header = None, delim_whitespace = True, nrows = 1).to_numpy()[0][1]
-    # steps=1 acá
-    cell = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 3, nrows = 3).to_numpy()
+    nAt1, nAt2 = sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF)
 
-    Lx, Ly, Lz = cell[0][0], cell[1][1], cell[2][2]
+    normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames, RDF, filename)
 
-    snaps = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 6, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz'])
-    # snaps es solo un snap o sea solo un xyz acá
-
-    ngr = 0
-    delg = box / (2*nhis)
-    for i in range(nhis):
-        g(i) = 0
-
-    ngr += 1
-
-    for i in range(nAt-1):
-        for j in range(i+1, nAt):
-
-
-
-# def init(xsf = 'example1.xsf'):
-#     '''
-#     Takes an .xsf file and acquire:
-#         * nAt: number of atoms.
-#         * rows: number of rows with relevant information per snapshot.
-#         * idAt: list of elements' names.
-#         * steps: total number of snapshots.
-#         * cell: cell dimensions along x (Lx), y (Ly) and z (Lz).
-#         * snaps: dataframe with idAt and positions for the nAt in the steps snapshots
-#     '''
-#
-#     nAt = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 7, nrows = 1).to_numpy()[0][0]
-#
-#     rows = nAt + 2 # ver si puedo eliminar esas 2 filas extras!
-#
-#     idAt = pd.read_csv(xsf, header = None, names = ['idAt'], delim_whitespace = True, skiprows = 8, usecols = [0], nrows = nAt).drop_duplicates()['idAt'].values.tolist()
-#
-#     steps = pd.read_csv(xsf, header = None, delim_whitespace = True, nrows = 1).to_numpy()[0][1]
-#     # steps=1 acá
-#     cell = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 3, nrows = 3).to_numpy()
-#
-#     Lx, Ly, Lz = cell[0][0], cell[1][1], cell[2][2]
-#
-#     snaps = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 6, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz'])
-#     # snaps es solo un snap o sea solo un xyz acá
-#     return nAt, rows, idAt, steps, Lx, Ly, Lz, snaps
-#
-# def min_im(coord, length):
-#     '''
-#     Minimum image convention for PBC.
-#     '''
-#
-#     if coord < -0.5 * length:
-#         coord += length
-#     elif coord > 0.5 * length:
-#         coord -= length
-#
-#     return coord
-#
-# def hist_up(Rcut, Lx, Ly, Lz, xyz, nAt, dr, RDF):
-#     '''
-#     Updates histogram information with current snapshot.
-#     '''
-#
-#     Rcut2 = Rcut * Rcut
-#
-#     label = np.array(xyz[:,0])
-#     rx = np.array(xyz[:,1])
-#     ry = np.array(xyz[:,2])
-#     rz = np.array(xyz[:,3])
-#
-#     for i in range(nAt-1):
-#         for j in range(i+1, nAt):
-#             dx = rx[i] - rx[j]
-#             dx = min_im(dx, Lx)
-#
-#             dy = ry[i] - ry[j]
-#             dy = min_im(dy, Ly)
-#
-#             dz = rz[i] - rz[j]
-#             dz = min_im(dz, Lz)
-#
-#             r2 = dx * dx + dy * dy + dz * dz
-#
-#             if r2 < Rcut2:
-#                 bin = int(np.sqrt(r2)/dr)
-#                 RDF[bin] += 2 # no sé bien por qué suma 2 y no 1 ! - dice que 2 es la contribución de las partículas
-#
-# def normalize(nBin, dr, RDF, nRDF, nAt, f):
-#     '''
-#     Normalize de function.
-#     '''
-#
-#     rho=0.85 # densidad!
-#
-#     for i in range(nBin):
-#         r = dr * (i + 0.5) # Distance
-#         vBin = ( (i+1) * (i+1) * (i+1) - i*i*i ) * dr*dr*dr # volume between bin i and bin i+1
-#         nId = (4/3) * np.pi * vBin * rho # number of ideal particles in vBin
-#         RDF[i] /= nRDF * nAt * nId
-#
-#         f.write(f'{dr*i:.3} \t {RDF[i]:.4} \n')
-#
-# def main():
-#
-#     nAt, rows, idAt, steps, Lx, Ly, Lz, snaps = init()
-#
-#     Rcut = 10 # maximum radius to be considered
-#     dr = 0.1 # bin size
-#     nBin = int(Rcut/dr) + 1 # number of bins
-#     RDF = np.zeros(nBin) # initialize array of zeros for RDF
-#     nRDF = 0 # number of snapshots used
-#
-#     with open(f'rdf.dat', 'w') as f:
-#         for i in range(steps):
-#         # for i in range(1):
-#             nRDF += 1
-#             start = i*rows + 2
-#             end = rows*(i+1)
-#             xyz = snaps.iloc[start:end].to_numpy()
-#             hist_up(Rcut, Lx, Ly, Lz, xyz, nAt, dr, RDF)
-#
-#         RDF = normalize(nBin, dr, RDF, nRDF, nAt, f)
-#
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
