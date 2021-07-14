@@ -1,50 +1,77 @@
-#!/usr/local/bin/python3.9
+#!python3.9
+
+'''
+    Calculation: Radial pair Distribution Function (RDF).
+    Description: todo en Angstrom!
+    Written by: Ignacio J. Chevallier-Boutell.
+    Dated: July, 2021.
+'''
 
 import pandas as pd
 import numpy as np
 
 def user_input():
     '''
-    PREGUNTAS AL USUARIO
+    User queries.
     '''
+    # rows = nAt + 2 # ver si puedo eliminar esas 2 filas extras!
+    #
+    # snaps = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 6, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz'])
+    # # snaps es solo un snap o sea solo un xyz acá
 
-    # Sistema a estudiar
+
+    # System
+    # xsf = 'example1.xsf'
+    #
+    # total_frames = pd.read_csv(xsf, header = None, delim_whitespace = True, nrows = 1).to_numpy()[0][1]
+    #
+    # cell = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 3, nrows = 3).to_numpy()
+    #
+    # Lx, Ly, Lz = cell[0][0], cell[1][1], cell[2][2]
+    #
+    # nAtTot = pd.read_csv(xsf, header = None, delim_whitespace = True, skiprows = 7, nrows = 1).to_numpy()[0][0]
+    #
+    # idAt = pd.read_csv(xsf, header = None, names = ['idAt'], delim_whitespace = True, skiprows = 8, usecols = [0], nrows = nAt).drop_duplicates()['idAt'].values.tolist()
+
+
+    ####################
     xyz = pd.read_csv('example1_xyz.xsf', header = None, delim_whitespace = True, skiprows = 2, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz'])
-    nAt = 103
-    idAt = ['O', 'Si', 'Pt', 'H']
+    # nAtTot = 103
+    # idAt = ['O', 'Si', 'Pt', 'H']
     Lx, Ly, Lz = 10.5599958569, 14.9399970185, 21.9999878486
-    # xyz = pd.read_csv('example1_xyz.xsf', header = None, delim_whitespace = True, skiprows = 2, usecols = [0,1,2,3], names=['idAt', 'rx', 'ry', 'rz']).to_numpy()
 
-    # Átomos a comparar - Si con O del agua (Pt)
+    # Atoms to compare
     at1 = 'Si'
     at2 = 'Pt'
 
-    # Filtro el archivo con los átomos seleccionados
     xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
     xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
 
-    # Frames a medir
+    # Number of frames
 
-    # Parámetros del histograma
-    dr = 0.1 # bin size (incremento)
+    # Histogram parameters
+    dr = 0.1 # increment
     Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
 
     # Output filename
     filename = 'example1_NC'
+
     return Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, filename
 
 def hist_init(dr, Rcut):
     '''
-    Inicialización del histograma
+    Initialize the histogram.
     '''
-    nBin = int(Rcut/dr) + 1 # number of bins
-    Rcut = nBin * dr # Reajusta el máximo cuando no es un múltiplo entero del incremento.
-    RDF = np.zeros(nBin) # initialize array of zeros for RDF. RDF es el histograma en sí mismo. mucho muy imporante
-    return nBin, Rcut, RDF
 
-def PBC(dist, length):
+    nBin = int(Rcut/dr) + 1 # number of bins
+    Rcut = nBin * dr # adjust maximum
+    H = np.zeros(nBin) # initialize array of zeros
+
+    return nBin, Rcut, H
+
+def PBC(dist, length): # Nacho
     '''
-    Correct a distance dist accoring to periodic boundary conditions length.
+    Correct a distance using Periodic Boundary Conditions (PBC).
     '''
 
     if dist < -0.5 * length:
@@ -54,13 +81,22 @@ def PBC(dist, length):
 
     return dist
 
+# def PBC(dist, length): # Frenkel
+#     '''
+#     Correct a distance using Periodic Boundary Conditions (PBC).
+#     '''
+#
+#     return dist - length * int(dist/length)
+
 def hist_up(data, dr, H):
     '''
-    Updates an existing histogram.
+    Updates the existing histogram.
+
+    It's considered that "data" is squared.
     '''
 
     binIdx = int(np.sqrt(data)/dr)
-    H[binIdx] += 2 # no sé bien por qué suma 2 y no 1 ! - dice que 2 es la contribución de las partículas pero en el código decía +1 . porque son dos contribuyendo (o sea i ve a j y despues j ve a i)
+    H[binIdx] += 2 # contribution of i and j particles
 
 def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF):
     Rcut2 = Rcut * Rcut
@@ -76,7 +112,7 @@ def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF):
     nAt1 = len(rx1)
     nAt2 = len(rx2)
 
-    # Aplicación de PBC y actualización del histograma
+    # Apply PBC and updates the histogram
     # No estoy considerando duplicados si midiera el mismo átomo contra sí mismo
     # Frenkel usa las PBC de manera diferente
     for i in range(nAt1):
@@ -92,28 +128,28 @@ def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF):
 
             r2 = dx * dx + dy * dy + dz * dz
 
-            if r2 <= Rcut2: # acá tiene 0.5 L siendo L el largo de la caja # Ver si va a ser contado y contar
+            if r2 <= Rcut2:
+                # acá tiene 0.5 L siendo L el largo de la caja # Ver si va a ser contado y contar
                 hist_up(r2, dr, RDF)
 
     return nAt1, nAt2
 
 def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames, RDF, filename):
+    '''
+    Determine the normalize RDF.
+    '''
 
-    ## Cálculo de la g(r) - determine g(r)
-
-    # Normalizamos cada bin por su volumen ya que a mayores distancias se espera un mayor conteo, incluso para el caso ideal. ¿Porque dividimos por nAt?
-
-    nAtTot = nAt1 + nAt2
-    rho = nAtTot / (Lx * Ly * Lz) # densidad de partículas (caso ideal) - densidad uniforme
-    prefact = 4 * np.pi # para no estar calculandolo todas las veces. Omito el dividido 3 porque aproximo a primer orden --- considerando que la distancia es r = dr * (i + 0.5)
+    nAt = nAt1 + nAt2 # number of atoms compared
+    rho = nAt / (Lx * Ly * Lz) # ideal (uniform) density
+    prefact = 4 * np.pi
     dr3 = dr * dr * dr
 
     with open(f'{filename}.dat', 'w') as f:
         for binIdx in range(nBin):
-            # volBin = prefact * ( (binIdx+1) * (binIdx+1) * (binIdx+1) - binIdx * binIdx * binIdx ) * dr3 # frenkel
-            volBin = prefact * ( (binIdx + 0.5) * (binIdx + 0.5) ) * dr3 # volume between bin i and bin i+1
+            # the distance is r = dr * (i + 0.5)
+            volBin = prefact * ( (binIdx + 0.5) * (binIdx + 0.5) ) * dr3
             nIdeal = volBin * rho
-            RDF[binIdx] /= frames * nIdeal * nAtTot
+            RDF[binIdx] /= frames * nIdeal * nAt
             f.write(f'{RDF[binIdx]} \n')
 
 def main():
@@ -122,9 +158,10 @@ def main():
 
     nBin, Rcut, RDF = hist_init(dr, Rcut)
 
-    frames = 1 # Contador de frames
+    frames = 0 # frames counter
 
     nAt1, nAt2 = sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF)
+    frames += 1
 
     normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames, RDF, filename)
 

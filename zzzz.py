@@ -1,12 +1,5 @@
 #!/usr/local/bin/python3.9
 
-'''
-    Calculation: Radial Distribution Function (RDF).
-    Description: todo en Angstrom!
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: July, 2021.
-'''
-
 import pandas as pd
 import numpy as np
 
