@@ -16,7 +16,7 @@ def user_input():
     '''
 
     # System
-    file_in = 'example1.xsf'
+    file_in = 'example31.xsf'
     xsf = pd.read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
@@ -44,7 +44,7 @@ def user_input():
     Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
 
     # Output file_out
-    file_out = 'example1_NC'
+    file_out = 'example31_NC'
 
     return total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
 
