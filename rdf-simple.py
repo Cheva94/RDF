@@ -1,8 +1,8 @@
 #!python3.9
 
 '''
-    Calculation: Radial pair Distribution Function (RDF).
-    Description: todo en Angstrom!
+    Calculation: Radial Distribution Function (RDF).
+    Description: using Angstrom.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: July, 2021.
 '''
@@ -16,7 +16,7 @@ def user_input():
     '''
 
     # System
-    file_in = 'example1.xsf'
+    file_in = input("Enter your xsf file: ")
     xsf = pd.read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
@@ -25,9 +25,15 @@ def user_input():
     idAt = xsf.iloc[8:(nAtTot+8),0].drop_duplicates().tolist()
     xyz_all = xsf.iloc[6:,0:4].reset_index(drop=True)
 
+    print('>>> Information from the input file:')
+    print(f'\t * There are {total_frames} frames in the file.')
+    print(f'\t * Cell dimensions (in Angstrom): (x, y, z) = ({Lx:.2f}, {Ly:.2f}, {Lz:.2f}).')
+    print(f'\t * There are {nAtTot} atoms whithin the cell.')
+    print(f'\t * Atomic species: {", ".join(idAt)}.')
+
     # Atoms to compare
-    at1 = 'Si'
-    at2 = 'Pt'
+    at1 = input("Choose one element of the list of atomic species: ")
+    at2 = input("Choose another element of the list of atomic species: ")
 
     nAt1 = xsf.iloc[8:(nAtTot+8),0].value_counts()[at1]
     nAt2 = xsf.iloc[8:(nAtTot+8),0].value_counts()[at2]
@@ -44,7 +50,7 @@ def user_input():
     Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
 
     # Output file_out
-    file_out = 'example1_NC'
+    file_out = f'{file_in.split(".")[0]}_rdf-simple'
 
     return total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
 
@@ -152,5 +158,7 @@ def main():
 
     normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out)
 
+    print(f'Job done! The RDF file is: {file_out}.')
+    
 if __name__ == "__main__":
     main()
