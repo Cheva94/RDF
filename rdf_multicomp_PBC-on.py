@@ -72,13 +72,7 @@ def PBC(dist, length):
     '''
     Correct a distance using Periodic Boundary Conditions (PBC).
     '''
-
-    if dist < -0.5 * length:
-        dist += length
-    elif dist > 0.5 * length:
-        dist -= length
-
-    return dist
+    return dist - length * int(2*dist/length)
 
 def hist_up(data, dr, H):
     '''
@@ -113,7 +107,7 @@ def sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
             dz = rz1[i] - rz2[j]
             dz = PBC(dz, Lz)
 
-            r2 = dx * dx + dy * dy + dz * dz
+            r2 = dx**2 + dy**2 + dz**2
 
             if r2 <= Rcut2:
                 hist_up(r2, dr, RDF)
@@ -123,16 +117,16 @@ def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
     Determine the normalize RDF.
     '''
 
-    nAt = nAt1 + nAt2 # number of atoms compared
-    rho = nAt / (Lx * Ly * Lz) # ideal (uniform) density
+    volBox = Lx * Ly * Lz
+    nPairs = nAt1 * nAt2 * 2
+    RDF *= volBox / nPairs
     prefact = 4 * np.pi * dr**3
 
     with open(f'{file_out}.dat', 'w') as f:
         for binIdx in range(nBin):
             # r = [(binIdx+0.5)*dr for binIdx in range(nBin)] # distance to half bin
-            volBin = prefact * (binIdx + 0.5)**2
-            nIdeal = volBin * rho
-            RDF[binIdx] /= frames_count * nIdeal * nAt
+            volShell = prefact * (binIdx + 0.5)**2
+            RDF[binIdx] /= frames_count * volShell
             f.write(f'{RDF[binIdx]} \n')
 
 def main():
