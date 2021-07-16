@@ -16,7 +16,8 @@ def user_input():
     '''
 
     # System
-    file_in = input("Enter your xsf file: ")
+    # file_in = input("Enter your xsf file: ")
+    file_in = 'example.xsf'
     xsf = pd.read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
@@ -25,15 +26,17 @@ def user_input():
     idAt = xsf.iloc[8:(nAtTot+8),0].drop_duplicates().tolist()
     xyz_all = xsf.iloc[6:,0:4].reset_index(drop=True)
 
-    print('>>> Information from the input file:')
-    print(f'\t * There are {total_frames} frames in the file.')
-    print(f'\t * Cell dimensions (in Angstrom): (x, y, z) = ({Lx:.2f}, {Ly:.2f}, {Lz:.2f}).')
-    print(f'\t * There are {nAtTot} atoms whithin the cell.')
-    print(f'\t * Atomic species: {", ".join(idAt)}.')
+    # print('>>> Information from the input file:')
+    # print(f'\t * There are {total_frames} frames in the file.')
+    # print(f'\t * Cell dimensions (in Angstrom): (x, y, z) = ({Lx:.2f}, {Ly:.2f}, {Lz:.2f}).')
+    # print(f'\t * There are {nAtTot} atoms whithin the cell.')
+    # print(f'\t * Atomic species: {", ".join(idAt)}.')
 
     # Atoms to compare
-    at1 = input("Choose one element of the list of atomic species: ")
-    at2 = input("Choose another element of the list of atomic species: ")
+    # at1 = input("Choose one element of the list of atomic species: ")
+    # at2 = input("Choose another element of the list of atomic species: ")
+    at1 = 'Si'
+    at2 = 'Pt'
 
     nAt1 = xsf.iloc[8:(nAtTot+8),0].value_counts()[at1]
     nAt2 = xsf.iloc[8:(nAtTot+8),0].value_counts()[at2]
@@ -50,7 +53,7 @@ def user_input():
     Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
 
     # Output file_out
-    file_out = f'{file_in.split(".")[0]}_rdf-simple'
+    file_out = f'{file_in.split(".")[0]}_{at1}-{at2}_rdf_PBC_on'
 
     return total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
 
@@ -65,7 +68,7 @@ def hist_init(dr, Rcut):
 
     return nBin, Rcut, H
 
-def PBC(dist, length): # Nacho
+def PBC(dist, length):
     '''
     Correct a distance using Periodic Boundary Conditions (PBC).
     '''
@@ -76,13 +79,6 @@ def PBC(dist, length): # Nacho
         dist -= length
 
     return dist
-
-# def PBC(dist, length): # Frenkel
-#     '''
-#     Correct a distance using Periodic Boundary Conditions (PBC).
-#     '''
-#
-#     return dist - length * int(dist/length)
 
 def hist_up(data, dr, H):
     '''
@@ -120,7 +116,6 @@ def sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
             r2 = dx * dx + dy * dy + dz * dz
 
             if r2 <= Rcut2:
-                # acá tiene 0.5 L siendo L el largo de la caja
                 hist_up(r2, dr, RDF)
 
 def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
@@ -130,13 +125,12 @@ def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
 
     nAt = nAt1 + nAt2 # number of atoms compared
     rho = nAt / (Lx * Ly * Lz) # ideal (uniform) density
-    prefact = 4 * np.pi
-    dr3 = dr * dr * dr
+    prefact = 4 * np.pi * dr**3
 
     with open(f'{file_out}.dat', 'w') as f:
         for binIdx in range(nBin):
-            # the distance is r = dr * (i + 0.5)
-            volBin = prefact * ( (binIdx + 0.5) * (binIdx + 0.5) ) * dr3
+            # r = [(binIdx+0.5)*dr for binIdx in range(nBin)] # distance to half bin
+            volBin = prefact * (binIdx + 0.5)**2
             nIdeal = volBin * rho
             RDF[binIdx] /= frames_count * nIdeal * nAt
             f.write(f'{RDF[binIdx]} \n')
@@ -158,7 +152,7 @@ def main():
 
     normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out)
 
-    print(f'Job done! The RDF file is: {file_out}.')
-    
+    # print(f'Job done! The RDF file is: {file_out}.')
+
 if __name__ == "__main__":
     main()
