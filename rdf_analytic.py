@@ -8,7 +8,8 @@
 '''
 
 import pandas as pd
-import numpy as np
+from numpy import sqrt, zeros, array
+from analytic_vol import volShell
 
 def user_input():
     '''
@@ -17,7 +18,8 @@ def user_input():
 
     # System
     # file_in = input("Enter your xsf file: ")
-    file_in = 'example.xsf'
+    # file_in = 'example.xsf'
+    file_in = 'largo.xsf'
     xsf = pd.read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
@@ -50,101 +52,98 @@ def user_input():
 
     # Histogram parameters
     dr = 0.1 # increment
-    Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
+    Rcut = 0.5 * sqrt(Lx**2 + Ly**2 + Lz**2) # maximum radius to be considered (max Value of the histogram)
 
     # Output file_out
-    file_out = f'{file_in.split(".")[0]}_{at1}-{at2}_rdf_PBC_on'
+    file_out = f'{file_in.split(".")[0]}_{at1}-{at2}_rdf_analytic'
 
     return total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
 
-def hist_init(dr, Rcut):
+def hist_init(increment, maximum):
     '''
     Initialize the histogram.
     '''
 
-    nBin = int(Rcut/dr) + 1 # number of bins
-    Rcut = nBin * dr # adjust maximum
-    H = np.zeros(nBin) # initialize array of zeros
+    nBin = int(maximum/increment) + 1 # number of bins
+    maximum = nBin * increment # adjust maximum
+    H = zeros(nBin) # initialize array of zeros for global histogram
+    OccBin = zeros(nBin) # count bins with at least on object
 
-    return nBin, Rcut, H
+    return nBin, maximum, H, OccBin
 
-def PBC(dist, length):
-    '''
-    Correct a distance using Periodic Boundary Conditions (PBC).
-    '''
-    return dist - length * int(2*dist/length)
-
-def hist_up(data, dr, H):
+def hist_up(data, increment, H):
     '''
     Updates the existing histogram.
 
     It's considered that "data" is squared.
     '''
 
-    binIdx = int(np.sqrt(data)/dr)
+    binIdx = int(sqrt(data)/increment)
     H[binIdx] += 2 # contribution of i and j particles
 
-def sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, global_RDF, nAt1, nAt2, nBin, OccShell):
     Rcut2 = Rcut * Rcut
 
-    rx1 = np.array(xyz1[:,1])
-    ry1 = np.array(xyz1[:,2])
-    rz1 = np.array(xyz1[:,3])
+    rx1 = array(xyz1[:,1])
+    ry1 = array(xyz1[:,2])
+    rz1 = array(xyz1[:,3])
 
-    rx2 = np.array(xyz2[:,1])
-    ry2 = np.array(xyz2[:,2])
-    rz2 = np.array(xyz2[:,3])
+    rx2 = array(xyz2[:,1])
+    ry2 = array(xyz2[:,2])
+    rz2 = array(xyz2[:,3])
 
-    # Apply PBC and updates the histogram
+    # Updates the histogram
     for i in range(nAt1):
+        local_RDF = zeros(nBin)
         for j in range(nAt2):
             dx = rx1[i] - rx2[j]
-            dx = PBC(dx, Lx)
-
             dy = ry1[i] - ry2[j]
-            dy = PBC(dy, Ly)
-
             dz = rz1[i] - rz2[j]
-            dz = PBC(dz, Lz)
 
             d2 = dx**2 + dy**2 + dz**2
 
             if d2 <= Rcut2:
-                hist_up(d2, dr, RDF)
+                hist_up(d2, dr, local_RDF)
 
-def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
-    '''
-    Determine the normalize RDF.
-    '''
-
-    volBox = Lx * Ly * Lz
-    nPairs = nAt1 * nAt2 * 2
-    RDF *= volBox / nPairs
-    prefact = 4 * np.pi * dr**3
-
-    with open(f'{file_out}.dat', 'w') as f:
+        localBox = [-rx1[i], Lx - rx1[i], -ry1[i], Ly - ry1[i], -rz1[i], Lz - rz1[i]]
         for binIdx in range(nBin):
-            # r = [(binIdx+0.5)*dr for binIdx in range(nBin)] # distance to half bin
-            volShell = prefact * (binIdx + 0.5)**2
-            RDF[binIdx] /= frames_count * volShell
-            f.write(f'{RDF[binIdx]} \n')
+            volBin = volShell(binIdx * dr, (binIdx + 1) * dr, localBox)
+            if volBin > 0: # revisar esto!
+                local_RDF[binIdx] /= volBin
+                OccShell[binIdx] += 2 # decia +1 pero por como lo tengo escrito es +2
+
+        global_RDF += local_RDF
 
 def main():
 
     total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out = user_input()
 
-    nBin, Rcut, RDF = hist_init(dr, Rcut)
+    nBin, Rcut, global_RDF, OccShell = hist_init(dr, Rcut)
 
+    time_RDF = zeros(nBin)
     frames_count = 0
     rows = nAtTot + 2
     for frame in range(total_frames):
         xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
         xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
         xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
-        sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
-        frames_count += 1
 
-    normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out)
+        sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, global_RDF, nAt1, nAt2, nBin, OccShell)
+
+        # rho = (nAt1 + nAt2) / (Lx * Ly * Lz) # densidad ideal (uniforme)
+        global_RDF *= (Lx * Ly * Lz) / (nAt1 + nAt2)
+        for binIdx in range(nBin): # list comprehension?
+            if OccShell[binIdx] != 0:
+                global_RDF[binIdx] /= OccShell[binIdx]
+
+        time_RDF += global_RDF
+        frames_count += 1 # aun no lo use
+
+    time_RDF /= frames_count
+
+    with open(f'{file_out}.dat', 'w') as f:
+        for binIdx in range(nBin):
+            f.write(f'{time_RDF[binIdx]} \n')
 
     # print(f'Job done! The RDF file is: {file_out}.')
 

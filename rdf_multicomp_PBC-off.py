@@ -55,30 +55,30 @@ def user_input():
     # Output file_out
     file_out = f'{file_in.split(".")[0]}_{at1}-{at2}_rdf_PBC_off'
 
-    return total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
+    return total_frames, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
 
-def hist_init(dr, Rcut):
+def hist_init(increment, maximum):
     '''
     Initialize the histogram.
     '''
 
-    nBin = int(Rcut/dr) + 1 # number of bins
-    Rcut = nBin * dr # adjust maximum
+    nBin = int(maximum/increment) + 1 # number of bins
+    maximum = nBin * increment # adjust maximum
     H = np.zeros(nBin) # initialize array of zeros
 
-    return nBin, Rcut, H
+    return nBin, maximum, H
 
-def hist_up(data, dr, H):
+def hist_up(data, increment, H):
     '''
     Updates the existing histogram.
 
     It's considered that "data" is squared.
     '''
 
-    binIdx = int(np.sqrt(data)/dr)
+    binIdx = int(np.sqrt(data)/increment)
     H[binIdx] += 2 # contribution of i and j particles
 
-def sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+def sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     Rcut2 = Rcut * Rcut
 
     rx1 = np.array(xyz1[:,1])
@@ -93,17 +93,15 @@ def sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     for i in range(nAt1):
         for j in range(nAt2):
             dx = rx1[i] - rx2[j]
-
             dy = ry1[i] - ry2[j]
-
             dz = rz1[i] - rz2[j]
 
-            r2 = dx**2 + dy**2 + dz**2
+            d2 = dx**2 + dy**2 + dz**2
 
-            if r2 <= Rcut2:
-                hist_up(r2, dr, RDF)
+            if d2 <= Rcut2:
+                hist_up(d2, dr, RDF)
 
-def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
+def normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
     '''
     Determine the normalize RDF.
     '''
@@ -119,7 +117,7 @@ def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
 
 def main():
 
-    total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out = user_input()
+    total_frames, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out = user_input()
 
     nBin, Rcut, RDF = hist_init(dr, Rcut)
 
@@ -129,10 +127,10 @@ def main():
         xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
         xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
         xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
-        sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
+        sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
         frames_count += 1
 
-    normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out)
+    normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, file_out)
 
     # print(f'Job done! The RDF file is: {file_out}.')
 
