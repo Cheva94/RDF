@@ -7,8 +7,8 @@
     Dated: July, 2021.
 '''
 
-import pandas as pd
-import numpy as np
+from pandas import read_csv
+from numpy import zeros, sqrt, array, pi
 
 def user_input():
     '''
@@ -18,7 +18,7 @@ def user_input():
     # System
     # file_in = input("Enter your xsf file: ")
     file_in = 'example.xsf'
-    xsf = pd.read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
+    xsf = read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
     Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
@@ -64,7 +64,7 @@ def hist_init(dr, Rcut):
 
     nBin = int(Rcut/dr) + 1 # number of bins
     Rcut = nBin * dr # adjust maximum
-    H = np.zeros(nBin) # initialize array of zeros
+    H = zeros(nBin) # initialize array of zeros
 
     return nBin, Rcut, H
 
@@ -81,19 +81,19 @@ def hist_up(data, dr, H):
     It's considered that "data" is squared.
     '''
 
-    binIdx = int(np.sqrt(data)/dr)
+    binIdx = int(sqrt(data)/dr)
     H[binIdx] += 2 # contribution of i and j particles
 
 def sample_diff(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     Rcut2 = Rcut * Rcut
 
-    rx1 = np.array(xyz1[:,1])
-    ry1 = np.array(xyz1[:,2])
-    rz1 = np.array(xyz1[:,3])
+    rx1 = array(xyz1[:,1])
+    ry1 = array(xyz1[:,2])
+    rz1 = array(xyz1[:,3])
 
-    rx2 = np.array(xyz2[:,1])
-    ry2 = np.array(xyz2[:,2])
-    rz2 = np.array(xyz2[:,3])
+    rx2 = array(xyz2[:,1])
+    ry2 = array(xyz2[:,2])
+    rz2 = array(xyz2[:,3])
 
     # Apply PBC and updates the histogram
     for i in range(nAt1):
@@ -120,7 +120,7 @@ def normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
     volBox = Lx * Ly * Lz
     nPairs = nAt1 * nAt2 * 2
     RDF *= volBox / nPairs
-    prefact = 4 * np.pi * dr**3
+    prefact = 4 * pi * dr**3
 
     with open(f'{file_out}.dat', 'w') as f:
         for binIdx in range(nBin):

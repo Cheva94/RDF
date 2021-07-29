@@ -8,8 +8,7 @@
 '''
 
 from pandas import read_csv
-from numpy import sqrt, zeros, array
-from analytic_vol import volShell
+from numpy import zeros, sqrt, array, pi
 
 def user_input():
     '''
@@ -18,8 +17,7 @@ def user_input():
 
     # System
     # file_in = input("Enter your xsf file: ")
-    # file_in = 'example.xsf'
-    file_in = 'largo.xsf'
+    file_in = 'example.xsf'
     xsf = read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
@@ -52,12 +50,12 @@ def user_input():
 
     # Histogram parameters
     dr = 0.1 # increment
-    Rcut = 0.5 * sqrt(Lx**2 + Ly**2 + Lz**2) # maximum radius to be considered (max Value of the histogram)
+    Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
 
     # Output file_out
-    file_out = f'{file_in.split(".")[0]}_{at1}-{at2}_rdf_analytic'
+    file_out = f'{file_in.split(".")[0]}_{at1}-{at2}_rdf_PBC_off'
 
-    return total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
+    return total_frames, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
 
 def hist_init(increment, maximum):
     '''
@@ -66,10 +64,9 @@ def hist_init(increment, maximum):
 
     nBin = int(maximum/increment) + 1 # number of bins
     maximum = nBin * increment # adjust maximum
-    H = zeros(nBin) # initialize array of zeros for global histogram
-    OccBin = zeros(nBin) # count bins with at least on object
+    H = zeros(nBin) # initialize array of zeros
 
-    return nBin, maximum, H, OccBin
+    return nBin, maximum, H
 
 def hist_up(data, increment, H):
     '''
@@ -81,7 +78,7 @@ def hist_up(data, increment, H):
     binIdx = int(sqrt(data)/increment)
     H[binIdx] += 2 # contribution of i and j particles
 
-def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, global_RDF, nAt1, nAt2, nBin, OccShell):
+def sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz1[:,1])
@@ -94,7 +91,6 @@ def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, global_RDF, nAt1, nAt2, nBin, OccSh
 
     # Updates the histogram
     for i in range(nAt1):
-        local_RDF = zeros(nBin)
         for j in range(nAt2):
             dx = rx1[i] - rx2[j]
             dy = ry1[i] - ry2[j]
@@ -103,47 +99,38 @@ def sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, global_RDF, nAt1, nAt2, nBin, OccSh
             d2 = dx**2 + dy**2 + dz**2
 
             if d2 <= Rcut2:
-                hist_up(d2, dr, local_RDF)
+                hist_up(d2, dr, RDF)
 
-        localBox = [-rx1[i], Lx - rx1[i], -ry1[i], Ly - ry1[i], -rz1[i], Lz - rz1[i]]
+def normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
+    '''
+    Determine the normalize RDF.
+    '''
+
+    prefact = 4 * pi * dr**3
+
+    with open(f'{file_out}.dat', 'w') as f:
         for binIdx in range(nBin):
-            volBin = volShell(binIdx * dr, (binIdx + 1) * dr, localBox)
-            if volBin > 0: # revisar esto!
-                local_RDF[binIdx] /= volBin
-                OccShell[binIdx] += 2 # decia +1 pero por como lo tengo escrito es +2
-
-        global_RDF += local_RDF
+            # r = [(binIdx+0.5)*dr for binIdx in range(nBin)] # distance to half bin
+            volShell = prefact * (binIdx + 0.5)**2
+            RDF[binIdx] /= frames_count * volShell
+            f.write(f'{RDF[binIdx]} \n')
 
 def main():
 
-    total_frames, Lx, Ly, Lz, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out = user_input()
+    total_frames, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out = user_input()
 
-    nBin, Rcut, global_RDF, OccShell = hist_init(dr, Rcut)
+    nBin, Rcut, RDF = hist_init(dr, Rcut)
 
-    time_RDF = zeros(nBin)
     frames_count = 0
     rows = nAtTot + 2
     for frame in range(total_frames):
         xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
         xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
         xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
+        sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
+        frames_count += 1
 
-        sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, global_RDF, nAt1, nAt2, nBin, OccShell)
-
-        # rho = (nAt1 + nAt2) / (Lx * Ly * Lz) # densidad ideal (uniforme)
-        global_RDF *= (Lx * Ly * Lz) / (nAt1 + nAt2)
-        for binIdx in range(nBin): # list comprehension?
-            if OccShell[binIdx] != 0:
-                global_RDF[binIdx] /= OccShell[binIdx]
-
-        time_RDF += global_RDF
-        frames_count += 1 # aun no lo use
-
-    time_RDF /= frames_count
-
-    with open(f'{file_out}.dat', 'w') as f:
-        for binIdx in range(nBin):
-            f.write(f'{time_RDF[binIdx]} \n')
+    normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, file_out)
 
     # print(f'Job done! The RDF file is: {file_out}.')
 

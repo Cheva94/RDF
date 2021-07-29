@@ -7,8 +7,8 @@
     Dated: July, 2021.
 '''
 
-import pandas as pd
-import numpy as np
+from pandas import read_csv
+from numpy import zeros, sqrt, array, pi
 
 def user_input():
     '''
@@ -17,8 +17,8 @@ def user_input():
 
     # System
     # file_in = input("Enter your xsf file: ")
-    file_in = 'example.xsf'
-    xsf = pd.read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
+    file_in = '~/tesis/AIMD/AIMD_Agua-13x@silica03-2x2_10ps_WaterO2Pt.xsf'
+    xsf = read_csv(file_in, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
     Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
@@ -33,16 +33,10 @@ def user_input():
     # print(f'\t * Atomic species: {", ".join(idAt)}.')
 
     # Atoms to compare
-    # at1 = input("Choose one element of the list of atomic species: ")
-    # at2 = input("Choose another element of the list of atomic species: ")
-    at1 = 'Si'
-    at2 = 'Pt'
+    # at = input("Choose one element of the list of atomic species: ")
+    at = 'Pt'
 
-    nAt1 = xsf.iloc[8:(nAtTot+8),0].value_counts()[at1]
-    nAt2 = xsf.iloc[8:(nAtTot+8),0].value_counts()[at2]
-
-    # xyz1 = xyz_all[xyz_all['idAt'] == at1].to_numpy()
-    # xyz2 = xyz_all[xyz_all['idAt'] == at2].to_numpy()
+    nAt = xsf.iloc[8:(nAtTot+8),0].value_counts()[at]
 
     # # Number of frames
     # frame_start = 0
@@ -53,9 +47,9 @@ def user_input():
     Rcut = 10.0 # maximum radius to be considered (max Value of the histogram)
 
     # Output file_out
-    file_out = f'{file_in.split(".")[0]}_{at1}-{at2}_rdf_PBC_off'
+    file_out = 'RDF_PBC-off_watO-watO'
 
-    return total_frames, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out
+    return total_frames, nAtTot, xyz_all, at, nAt, dr, Rcut, file_out
 
 def hist_init(increment, maximum):
     '''
@@ -64,7 +58,7 @@ def hist_init(increment, maximum):
 
     nBin = int(maximum/increment) + 1 # number of bins
     maximum = nBin * increment # adjust maximum
-    H = np.zeros(nBin) # initialize array of zeros
+    H = zeros(nBin) # initialize array of zeros
 
     return nBin, maximum, H
 
@@ -75,23 +69,23 @@ def hist_up(data, increment, H):
     It's considered that "data" is squared.
     '''
 
-    binIdx = int(np.sqrt(data)/increment)
+    binIdx = int(sqrt(data)/increment)
     H[binIdx] += 2 # contribution of i and j particles
 
-def sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+def sample(xyz, dr, Rcut, RDF, nAt):
     Rcut2 = Rcut * Rcut
 
-    rx1 = np.array(xyz1[:,1])
-    ry1 = np.array(xyz1[:,2])
-    rz1 = np.array(xyz1[:,3])
+    rx1 = array(xyz[:,1])
+    ry1 = array(xyz[:,2])
+    rz1 = array(xyz[:,3])
 
-    rx2 = np.array(xyz2[:,1])
-    ry2 = np.array(xyz2[:,2])
-    rz2 = np.array(xyz2[:,3])
+    rx2 = array(xyz[:,1])
+    ry2 = array(xyz[:,2])
+    rz2 = array(xyz[:,3])
 
     # Updates the histogram
-    for i in range(nAt1):
-        for j in range(nAt2):
+    for i in range(nAt):
+        for j in range(i+1, nAt):
             dx = rx1[i] - rx2[j]
             dy = ry1[i] - ry2[j]
             dz = rz1[i] - rz2[j]
@@ -101,12 +95,12 @@ def sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
             if d2 <= Rcut2:
                 hist_up(d2, dr, RDF)
 
-def normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
+def normalize(nAt, dr, nBin, frames_count, RDF, file_out):
     '''
     Determine the normalize RDF.
     '''
 
-    prefact = 4 * np.pi * dr**3
+    prefact = 4 * pi * dr**3
 
     with open(f'{file_out}.dat', 'w') as f:
         for binIdx in range(nBin):
@@ -117,7 +111,7 @@ def normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, file_out):
 
 def main():
 
-    total_frames, nAtTot, xyz_all, at1, at2, nAt1, nAt2, dr, Rcut, file_out = user_input()
+    total_frames, nAtTot, xyz_all, at, nAt, dr, Rcut, file_out = user_input()
 
     nBin, Rcut, RDF = hist_init(dr, Rcut)
 
@@ -125,12 +119,11 @@ def main():
     rows = nAtTot + 2
     for frame in range(total_frames):
         xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-        xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
-        xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
-        sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
+        xyz = xyz[xyz['idAt'] == at].to_numpy()
+        sample(xyz, dr, Rcut, RDF, nAt)
         frames_count += 1
 
-    normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, file_out)
+    normalize(nAt, dr, nBin, frames_count, RDF, file_out)
 
     # print(f'Job done! The RDF file is: {file_out}.')
 
