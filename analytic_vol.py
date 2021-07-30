@@ -1,4 +1,4 @@
-#!python3.9
+#!/usr/bin/env python3.9
 
 '''
     Calculation: Radial Distribution Function (RDF).
@@ -51,7 +51,7 @@ def volShell(Rin, Rout, localBox):
     return volSph(Rout, localBox) - volSph(Rin, localBox)
 
 def main():
-    volShell(Rin, Rout, localBox)
+    print('This program cannot run on its own.')
 
 if __name__ == "__main__":
     main()
