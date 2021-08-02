@@ -7,13 +7,16 @@
                 different species (multicomponent). Periodic boundary conditions
                 can be turn on. Everything is in Angstrom.
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: July, 2021.
+    Dated: August, 2021.
 '''
 
 import argparse
-from core_rdf3d import *
+from core import *
+from time import time
 
 def main():
+    start = time() # starting wall time
+
     if args.periodic_boundary_conditions:
         if args.monocomponent:
 
@@ -33,7 +36,15 @@ def main():
 
             frames_count = 0
             rows = nAtTot + 2
-            for frame in range(total_frames):
+
+            frame_start = int(args.frames[0])
+            if frame_start != 0:
+                frame_start -= 1
+            frame_end = int(args.frames[1])
+            if frame_end == -1:
+                frame_end = total_frames
+
+            for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
                 xyz = xyz[xyz['idAt'] == at].to_numpy()
                 mono_on_sample(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt)
@@ -46,7 +57,9 @@ def main():
             mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
 
-            print(f'Job done! RDF between {at} and {at} was calculated with PBC.')
+            elapsed = time() - start # elapsed wall time
+            print(f'Job done in {elapsed:.3f} seconds!')
+            print(f'RDF between {at} and {at} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
@@ -68,7 +81,15 @@ def main():
 
             frames_count = 0
             rows = nAtTot + 2
-            for frame in range(total_frames):
+
+            frame_start = int(args.frames[0])
+            if frame_start != 0:
+                frame_start -= 1
+            frame_end = int(args.frames[1])
+            if frame_end == -1:
+                frame_end = total_frames
+
+            for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
                 xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
                 xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
@@ -82,7 +103,9 @@ def main():
             multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
 
-            print(f'Job done! RDF between {at1} and {at2} was calculated with PBC.')
+            elapsed = time() - start # elapsed wall time
+            print(f'Job done in {elapsed:.3f} seconds!')
+            print(f'RDF between {at1} and {at2} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:
@@ -101,7 +124,15 @@ def main():
 
             frames_count = 0
             rows = nAtTot + 2
-            for frame in range(total_frames):
+
+            frame_start = int(args.frames[0])
+            if frame_start != 0:
+                frame_start -= 1
+            frame_end = int(args.frames[1])
+            if frame_end == -1:
+                frame_end = total_frames
+
+            for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
                 xyz = xyz[xyz['idAt'] == at].to_numpy()
                 mono_off_sample(xyz, dr, Rcut, RDF, nAt)
@@ -113,7 +144,9 @@ def main():
 
             mono_off_normalize(nAt, dr, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done! RDF between {at} and {at} was calculated without PBC.')
+            elapsed = time() - start # elapsed wall time
+            print(f'Job done in {elapsed:.3f} seconds!')
+            print(f'RDF between {at} and {at} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
@@ -129,7 +162,15 @@ def main():
 
             frames_count = 0
             rows = nAtTot + 2
-            for frame in range(total_frames):
+
+            frame_start = int(args.frames[0])
+            if frame_start != 0:
+                frame_start -= 1
+            frame_end = int(args.frames[1])
+            if frame_end == -1:
+                frame_end = total_frames
+
+            for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
                 xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
                 xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
@@ -142,7 +183,9 @@ def main():
 
             multi_off_normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done! RDF between {at1} and {at2} was calculated without PBC.')
+            elapsed = time() - start # elapsed wall time
+            print(f'Job done in {elapsed:.3f} seconds!')
+            print(f'RDF between {at1} and {at2} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:
@@ -161,15 +204,18 @@ if __name__ == "__main__":
                         help = "Comparison between different species. Two \
                         arguments needed.")
 
+    parser.add_argument('input_file', help = "Path to the xsf input file.")
+
     parser.add_argument('dr', type = float, help = "Increment to be considered.")
 
     parser.add_argument('Rcut', type = float, help = "Maximum radius to be \
                         considered.")
 
-    parser.add_argument('input_file', help = "Path to the xsf input file.")
-
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")
+
+    parser.add_argument('-f', '--frames', nargs = 2, default = [0, -1],
+                        help = "Choose starting and ending frames to compute.")
 
     args = parser.parse_args()
 

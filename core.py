@@ -1,9 +1,9 @@
 #!/usr/bin/env python3.9
 
 '''
-    Description: Core functions used in program rdf3d.py.
+    Description: Core functions used in programs rdf3d and hdf.
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: July, 2021.
+    Dated: August, 2021.
 '''
 
 from pandas import read_csv
@@ -11,7 +11,8 @@ from numpy import zeros, sqrt, array, pi
 
 def user_file_mono(input_file, atom):
     '''
-    Process the input file given by the user with -mono option.
+    RDF3D: Process the input file given by the user with -mono option.
+    HDF: Process the input file given by the user.
     '''
 
     xsf = read_csv(input_file, header = None, delim_whitespace = True,
