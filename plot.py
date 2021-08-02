@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.9
 
 '''
-    Description: Plots RDF. It can be altogether in one plot or one plot each RDF.
+    Description: Plots altogether in one plot or one plot each argument.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: July, 2021.
 '''
@@ -41,9 +41,9 @@ def main():
             data = read_csv(f'{file}').to_numpy()
 
             file = file.split('.', 1)[0]
-            title = f"{file.split('_')[1]}    {file.split('_')[2].split('-')[0]}: {file.split('_')[2].split('-')[1]}"
-
-            ax.set_title(f'{title}')
+            # title = f"{file.split('_')[1]}    {file.split('_')[2].split('-')[0]}: {file.split('_')[2].split('-')[1]}"
+            #
+            # ax.set_title(f'{title}')
             ax.plot(data[:,0], data[:,1])
             ax.set_ylabel('g(r)')
             ax.set_xlabel('r [A]')
@@ -62,8 +62,8 @@ def main():
         for file in list:
             data = read_csv(f'{file}').to_numpy()
 
-            file = file.split('.', 1)[0].split('_',1)[1].split('_')
-            file = f"{file[0]}    {file[1].split('-')[0]}: {file[1].split('-')[1]}"
+            file = file.split('.', 1)[0]#.split('_',1)[1].split('_')
+            # file = f"{file[0]}    {file[1].split('-')[0]}: {file[1].split('-')[1]}"
 
             ax.plot(data[:,0], data[:,1], label = file)
             ax.set_ylabel('g(r)')
@@ -72,9 +72,9 @@ def main():
 
             plt.tight_layout()
 
-            plt.savefig(f'rdf.png')
+            plt.savefig('same.png')
 
-        print(f'Image file: rdf.png')
+        print(f'Image file: same.png')
 
         print('Job done!')
 
