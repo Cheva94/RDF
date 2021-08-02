@@ -52,8 +52,7 @@ def main():
         for binIdx in range(nBin):
             h = (binIdx + 0.5) * dh
             HDF[binIdx] /= frames_count
-            # f.write(f'{h:.2f}, {HDF[binIdx]:.4f} \n')
-            f.write(f'{HDF[binIdx]:.4f} \n')
+            f.write(f'{h:.2f}, {HDF[binIdx]:.4f} \n')
 
     elapsed = time() - start # elapsed wall time
     print(f'Job done in {elapsed:.3f} seconds!')

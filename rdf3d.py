@@ -52,14 +52,14 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf_{at}-{at}_PBC-on'
+                output_file = f'rdf3d_{at}-{at}_PBC-on'
 
             mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'RDF between {at} and {at} was calculated with PBC.')
+            print(f'3D RDF between {at} and {at} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
@@ -98,14 +98,14 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf_{at1}-{at2}_PBC-on'
+                output_file = f'rdf3d_{at1}-{at2}_PBC-on'
 
             multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'RDF between {at1} and {at2} was calculated with PBC.')
+            print(f'3D RDF between {at1} and {at2} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:
@@ -140,13 +140,13 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf_{at}-{at}_PBC-off'
+                output_file = f'rdf3d_{at}-{at}_PBC-off'
 
             mono_off_normalize(nAt, dr, nBin, frames_count, RDF, output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'RDF between {at} and {at} was calculated without PBC.')
+            print(f'3D RDF between {at} and {at} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
@@ -179,13 +179,13 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf_{at1}-{at2}_PBC-off'
+                output_file = f'rdf3d_{at1}-{at2}_PBC-off'
 
             multi_off_normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'RDF between {at1} and {at2} was calculated without PBC.')
+            print(f'3D RDF between {at1} and {at2} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:

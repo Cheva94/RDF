@@ -33,6 +33,11 @@ plt.rcParams['axes.prop_cycle'] = cycler(color=[V, N, R, Az, Am, Az_claro])
 
 def main():
     if args.different:
+        left = args.x_axis[0]
+        right = args.x_axis[1]
+        bottom = args.y_axis[0]
+        top = args.y_axis[1]
+
         list = args.different
 
         for file in list:
@@ -41,12 +46,18 @@ def main():
             data = read_csv(f'{file}').to_numpy()
 
             file = file.split('.', 1)[0]
-            # title = f"{file.split('_')[1]}    {file.split('_')[2].split('-')[0]}: {file.split('_')[2].split('-')[1]}"
-            #
-            # ax.set_title(f'{title}')
-            ax.plot(data[:,0], data[:,1])
-            ax.set_ylabel('g(r)')
-            ax.set_xlabel('r [A]')
+            ylabel = file.split('_',1)[0]
+
+            ax.plot(data[:,0], data[:,1], label = file)
+            ax.set_ylabel(f'{ylabel}')
+            ax.set_xlabel('Distance [A]')
+            ax.legend(loc='upper right', fontsize=15)
+
+            if (left != None) and (right != None):
+                ax.set_xlim(float(left), float(right))
+
+            if (bottom != None) and (top != None):
+                ax.set_ylim(float(bottom), float(top))
 
             plt.tight_layout()
 
@@ -56,25 +67,36 @@ def main():
         print('Job done!')
 
     elif args.same:
+        left = args.x_axis[0]
+        right = args.x_axis[1]
+        bottom = args.y_axis[0]
+        top = args.y_axis[1]
+
         list = args.same
 
         fig, ax = plt.subplots(figsize=(12,10))
         for file in list:
             data = read_csv(f'{file}').to_numpy()
 
-            file = file.split('.', 1)[0]#.split('_',1)[1].split('_')
-            # file = f"{file[0]}    {file[1].split('-')[0]}: {file[1].split('-')[1]}"
+            file = file.split('.', 1)[0]
+            ylabel = file.split('_',1)[0]
 
             ax.plot(data[:,0], data[:,1], label = file)
-            ax.set_ylabel('g(r)')
-            ax.set_xlabel('r [A]')
+            ax.set_ylabel(f'{ylabel}')
+            ax.set_xlabel('Distance [A]')
             ax.legend(loc='upper right', fontsize=15)
+
+            if (left != None) and (right != None):
+                ax.set_xlim(float(left), float(right))
+
+            if (bottom != None) and (top != None):
+                ax.set_ylim(float(bottom), float(top))
 
             plt.tight_layout()
 
-            plt.savefig('same.png')
+            plt.savefig(f'{ylabel}.png')
 
-        print(f'Image file: same.png')
+        print(f'Image file: {ylabel}.png')
 
         print('Job done!')
 
@@ -87,6 +109,12 @@ if __name__ == "__main__":
 
     parser.add_argument('-s', '--same', nargs = '+', help = "Creates one plot \
                         overlapping all the arguments.")
+
+    parser.add_argument('-x', '--x_axis', nargs = 2, default = [None, None],
+                        help = "Choose range for X axis .")
+
+    parser.add_argument('-y', '--y_axis', nargs = 2, default = [None, None],
+                        help = "Choose range for Y axis .")
 
     args = parser.parse_args()
 
