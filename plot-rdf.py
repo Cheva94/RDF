@@ -1,7 +1,9 @@
 #!/usr/bin/env python3.9
 
 '''
-    Description: using Angstrom.
+    Description: Plots RDF. It can be altogether in one plot or one plot each RDF.
+    Written by: Ignacio J. Chevallier-Boutell.
+    Dated: July, 2021.
 '''
 
 import argparse
@@ -79,9 +81,12 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-d', '--different', nargs = '+', help = "un plot por argumento. usar este si se va a plotear sólo 1")
+    parser.add_argument('-d', '--different', nargs = '+', help = "Creates one \
+                        plot per argument. If just one argument is needed, use \
+                        this option.")
 
-    parser.add_argument('-s', '--same', nargs = '+', help = "todo junto")
+    parser.add_argument('-s', '--same', nargs = '+', help = "Creates one plot \
+                        overlapping all the arguments.")
 
     args = parser.parse_args()
 

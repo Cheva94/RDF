@@ -1,7 +1,9 @@
 #!/usr/bin/env python3.9
 
 '''
-    Description
+    Description: Core functions used in program rdf3d.py.
+    Written by: Ignacio J. Chevallier-Boutell.
+    Dated: July, 2021.
 '''
 
 from pandas import read_csv
@@ -9,10 +11,11 @@ from numpy import zeros, sqrt, array, pi
 
 def user_file_mono(input_file, atom):
     '''
-    Process the input file given.
+    Process the input file given by the user with -mono option.
     '''
 
-    xsf = read_csv(input_file, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
+    xsf = read_csv(input_file, header = None, delim_whitespace = True,
+                    names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
     Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
@@ -24,10 +27,11 @@ def user_file_mono(input_file, atom):
 
 def user_file_multi(input_file, atom1, atom2):
     '''
-    Process the input file given.
+    Process the input file given by the user with -multi option.
     '''
 
-    xsf = read_csv(input_file, header = None, delim_whitespace = True, names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
+    xsf = read_csv(input_file, header = None, delim_whitespace = True,
+                    names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
 
     total_frames = int(xsf.iloc[0,1])
     Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
@@ -64,6 +68,10 @@ def PBC(dist, length):
     return dist - length * int(2*dist/length)
 
 def multi_off_sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+    '''
+    Determines RDF with -multi option and PBC off.
+    '''
+
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz1[:,1])
@@ -87,6 +95,10 @@ def multi_off_sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
                 hist_up(d2, dr, RDF)
 
 def multi_on_sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+    '''
+    Determines RDF with -multi option and PBC on.
+    '''
+
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz1[:,1])
@@ -114,6 +126,10 @@ def multi_on_sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
                 hist_up(d2, dr, RDF)
 
 def mono_on_sample(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
+    '''
+    Determines RDF with -mono option and PBC on.
+    '''
+
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz[:,1])
@@ -141,6 +157,10 @@ def mono_on_sample(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
                 hist_up(d2, dr, RDF)
 
 def mono_off_sample(xyz, dr, Rcut, RDF, nAt):
+    '''
+    Determines RDF with -mono option and PBC off.
+    '''
+
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz[:,1])
@@ -165,7 +185,7 @@ def mono_off_sample(xyz, dr, Rcut, RDF, nAt):
 
 def mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file):
     '''
-    Determine the normalize RDF.
+    Normalize de RDF with -mono option and PBC on.
     '''
 
     volBox = Lx * Ly * Lz
@@ -182,7 +202,7 @@ def mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file)
 
 def mono_off_normalize(nAt, dr, nBin, frames_count, RDF, output_file):
     '''
-    Determine the normalize RDF.
+    Normalize de RDF with -mono option and PBC off.
     '''
 
     prefact = 4 * pi * dr**3
@@ -194,9 +214,10 @@ def mono_off_normalize(nAt, dr, nBin, frames_count, RDF, output_file):
             RDF[binIdx] /= frames_count * volShell
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
-def multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, output_file):
+def multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF,
+                        output_file):
     '''
-    Determine the normalize RDF.
+    Normalize de RDF with -multi option and PBC on.
     '''
 
     volBox = Lx * Ly * Lz
@@ -213,7 +234,7 @@ def multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, outp
 
 def multi_off_normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, output_file):
     '''
-    Determine the normalize RDF.
+    Normalize de RDF with -multi option and PBC off.
     '''
 
     prefact = 4 * pi * dr**3

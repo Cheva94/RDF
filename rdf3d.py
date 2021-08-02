@@ -1,14 +1,17 @@
 #!/usr/bin/env python3.9
 
 '''
-    Calculation: Radial Distribution Function (RDF).
-    Description: using Angstrom.
+    Calculation: 3D Radial Distribution Function (RDF).
+    Description: Determines de 3D RDF when given a xsf file. The comparison can
+                be made between the same kind of atom (monocomponent) or between
+                different species (multicomponent). Periodic boundary conditions
+                can be turn on. Everything is in Angstrom.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: July, 2021.
 '''
 
 import argparse
-from core_rdf import *
+from core_rdf3d import *
 
 def main():
     if args.periodic_boundary_conditions:
@@ -22,7 +25,8 @@ def main():
 
             Lmin = 0.5 * min(Lx, Ly, Lz)
             if Rcut > Lmin:
-                print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will be the new Rcut value.')
+                print(f'Cannot choose Rcut greater than {Lmin:.2f}. \
+                        This will be the new Rcut value.')
                 Rcut = Lmin
 
             nBin, Rcut, RDF = hist_init(dr, Rcut)
@@ -39,9 +43,11 @@ def main():
             if output_file == None:
                 output_file = f'rdf_{at}-{at}_PBC-on'
 
-            mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file)
+            mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
+                                output_file)
 
-            print(f'Job done! RDF between {at} and {at} was calculated with PBC. \nOutput file: {output_file}.dat')
+            print(f'Job done! RDF between {at} and {at} was calculated with PBC.')
+            print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
 
@@ -54,7 +60,8 @@ def main():
 
             Lmin = 0.5 * min(Lx, Ly, Lz)
             if Rcut > Lmin:
-                print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will be the new Rcut value.')
+                print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will \
+                        be the new Rcut value.')
                 Rcut = Lmin
 
             nBin, Rcut, RDF = hist_init(dr, Rcut)
@@ -72,9 +79,11 @@ def main():
             if output_file == None:
                 output_file = f'rdf_{at1}-{at2}_PBC-on'
 
-            multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF, output_file)
+            multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
+                                RDF, output_file)
 
-            print(f'Job done! RDF between {at1} and {at2} was calculated with PBC. \nOutput file: {output_file}.dat')
+            print(f'Job done! RDF between {at1} and {at2} was calculated with PBC.')
+            print(f'Output file: {output_file}.dat')
 
         else:
             print('Must choose mono or multi, and select elements to compare.')
@@ -104,7 +113,8 @@ def main():
 
             mono_off_normalize(nAt, dr, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done! RDF between {at} and {at} was calculated without PBC. \nOutput file: {output_file}.dat')
+            print(f'Job done! RDF between {at} and {at} was calculated without PBC.')
+            print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
 
@@ -132,7 +142,8 @@ def main():
 
             multi_off_normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done! RDF between {at1} and {at2} was calculated without PBC. \nOutput file: {output_file}.dat')
+            print(f'Job done! RDF between {at1} and {at2} was calculated without PBC.')
+            print(f'Output file: {output_file}.dat')
 
         else:
             print('Must choose mono or multi, and select elements to compare.')
@@ -140,19 +151,25 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-pbc', '--periodic_boundary_conditions', action = 'store_true', help = "quiere PBC")
+    parser.add_argument('-pbc', '--periodic_boundary_conditions',
+                        action = 'store_true', help = "Set PBC on.")
 
-    parser.add_argument('-mono', '--monocomponent', help = "tira mono o multi")
+    parser.add_argument('-mono', '--monocomponent', help = "Comparison between \
+                        the same kind of atom. One argument needed.")
 
-    parser.add_argument('-multi', '--multicomponents', nargs = 2, help = "tira mono o multi")
+    parser.add_argument('-multi', '--multicomponents', nargs = 2,
+                        help = "Comparison between different species. Two \
+                        arguments needed.")
 
-    parser.add_argument('dr', type = float, help = "increment")
+    parser.add_argument('dr', type = float, help = "Increment to be considered.")
 
-    parser.add_argument('Rcut', type = float, help = "maximum radius")
+    parser.add_argument('Rcut', type = float, help = "Maximum radius to be \
+                        considered.")
 
-    parser.add_argument('input_file', help = "path del xsf")
+    parser.add_argument('input_file', help = "Path to the xsf input file.")
 
-    parser.add_argument('-o', '--output_file', help = "path del output")
+    parser.add_argument('-o', '--output_file', help = "Path to the output file. \
+                        If not given, the default name will be used.")
 
     args = parser.parse_args()
 
