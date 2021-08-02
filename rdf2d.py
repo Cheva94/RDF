@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.9
 
 '''
-    Calculation: 3D Radial Distribution Function (RDF).
-    Description: Determines de 3D RDF when given a xsf file. The comparison can
+    Calculation: 2D Radial Distribution Function (RDF).
+    Description: Determines de 2D RDF when given a xsf file. The comparison can
                 be made between the same kind of atom (monocomponent) or between
                 different species (multicomponent). Periodic boundary conditions
                 can be turn on. Everything is in Angstrom.
@@ -22,14 +22,15 @@ def main():
 
             dr = args.dr
             Rcut = args.Rcut
+            dh = args.dh
+            h = args.height
             at = args.monocomponent
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
-            Lmin = 0.5 * min(Lx, Ly, Lz)
+            Lmin = 0.5 * min(Lx, Ly)
             if Rcut > Lmin:
-                print(f'Cannot choose Rcut greater than {Lmin:.2f}. \
-                        This will be the new Rcut value.')
+                print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will be the new Rcut value.')
                 Rcut = Lmin
 
             nBin, Rcut, RDF = hist_init(dr, Rcut)
@@ -46,35 +47,37 @@ def main():
 
             for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz = xyz[xyz['idAt'] == at].to_numpy()
-                mono_on_sample3d(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt)
+                xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                nAt = len(xyz)
+                mono_on_sample2d(Lx, Ly, xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at}-{at}_PBC-on'
+                output_file = f'rdf2d_{at}-{at}_PBC-on_height-{h}'
 
-            normalize_on_mono3d(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
+            normalize_on_mono2d(Lx, Ly, dh, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at} and {at} was calculated with PBC.')
+            print(f'2D RDF between {at} and {at} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
 
             dr = args.dr
             Rcut = args.Rcut
+            dh = args.dh
+            h = args.height
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = user_file_multi(args.input_file, at1, at2)
 
-            Lmin = 0.5 * min(Lx, Ly, Lz)
+            Lmin = 0.5 * min(Lx, Ly)
             if Rcut > Lmin:
-                print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will \
-                        be the new Rcut value.')
+                print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will be the new Rcut value.')
                 Rcut = Lmin
 
             nBin, Rcut, RDF = hist_init(dr, Rcut)
@@ -91,21 +94,23 @@ def main():
 
             for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
-                xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
-                multi_on_sample3d(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
+                xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                nAt1 = len(xyz1)
+                nAt2 = len(xyz2)
+                multi_on_sample2d(Lx, Ly, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                 frames_count += 1
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at1}-{at2}_PBC-on'
+                output_file = f'rdf2d_{at1}-{at2}_PBC-on'
 
-            normalize_on_multi3d(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
+            normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at1} and {at2} was calculated with PBC.')
+            print(f'2D RDF between {at1} and {at2} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:
@@ -116,6 +121,8 @@ def main():
 
             dr = args.dr
             Rcut = args.Rcut
+            dh = args.dh
+            h = args.height
             at = args.monocomponent
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
@@ -134,25 +141,28 @@ def main():
 
             for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz = xyz[xyz['idAt'] == at].to_numpy()
-                mono_off_sample3d(xyz, dr, Rcut, RDF, nAt)
+                xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                nAt = len(xyz)
+                mono_off_sample2d(Lx, Ly, xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at}-{at}_PBC-off'
+                output_file = f'rdf2d_{at}-{at}_PBC-off'
 
-            normalize_off3d(dr, nBin, frames_count, RDF, output_file)
+            normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at} and {at} was calculated without PBC.')
+            print(f'2D RDF between {at} and {at} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
 
             dr = args.dr
             Rcut = args.Rcut
+            dh = args.dh
+            h = args.height
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
 
@@ -172,20 +182,22 @@ def main():
 
             for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
-                xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
-                multi_off_sample3d(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
+                xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                nAt1 = len(xyz1)
+                nAt2 = len(xyz2)
+                multi_off_sample2d(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                 frames_count += 1
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at1}-{at2}_PBC-off'
+                output_file = f'rdf2d_{at1}-{at2}_PBC-off'
 
-            normalize_off3d(dr, nBin, frames_count, RDF, output_file)
+            normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at1} and {at2} was calculated without PBC.')
+            print(f'2D RDF between {at1} and {at2} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:
@@ -206,10 +218,17 @@ if __name__ == "__main__":
 
     parser.add_argument('input_file', help = "Path to the xsf input file.")
 
-    parser.add_argument('dr', type = float, help = "Increment to be considered.")
+    parser.add_argument('dr', type = float, help = "Increment to be considered \
+                        for the RDF.")
 
     parser.add_argument('Rcut', type = float, help = "Maximum radius to be \
-                        considered.")
+                        considered in the RDF.")
+
+    parser.add_argument('dh', type = float, help = "Width of the slab to be \
+                        considered")
+
+    parser.add_argument('height', type = float, help = "Height at the center \
+                        of the slab of width dh")
 
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")

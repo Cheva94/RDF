@@ -11,7 +11,7 @@ from numpy import zeros, sqrt, array, pi
 
 def user_file_mono(input_file, atom):
     '''
-    RDF3D: Process the input file given by the user with -mono option.
+    RDF: Process the input file given by the user with -mono option.
     HDF: Process the input file given by the user.
     '''
 
@@ -68,9 +68,9 @@ def PBC(dist, length):
     '''
     return dist - length * int(2*dist/length)
 
-def multi_off_sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+def multi_off_sample3d(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     '''
-    Determines RDF with -multi option and PBC off.
+    Determines 3D RDF with -multi option and PBC off.
     '''
 
     Rcut2 = Rcut * Rcut
@@ -95,9 +95,9 @@ def multi_off_sample(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
             if d2 <= Rcut2:
                 hist_up(d2, dr, RDF)
 
-def multi_on_sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+def multi_on_sample3d(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     '''
-    Determines RDF with -multi option and PBC on.
+    Determines 3D RDF with -multi option and PBC on.
     '''
 
     Rcut2 = Rcut * Rcut
@@ -126,9 +126,9 @@ def multi_on_sample(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
             if d2 <= Rcut2:
                 hist_up(d2, dr, RDF)
 
-def mono_on_sample(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
+def mono_on_sample3d(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
     '''
-    Determines RDF with -mono option and PBC on.
+    Determines 3D RDF with -mono option and PBC on.
     '''
 
     Rcut2 = Rcut * Rcut
@@ -157,9 +157,9 @@ def mono_on_sample(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
             if d2 <= Rcut2:
                 hist_up(d2, dr, RDF)
 
-def mono_off_sample(xyz, dr, Rcut, RDF, nAt):
+def mono_off_sample3d(xyz, dr, Rcut, RDF, nAt):
     '''
-    Determines RDF with -mono option and PBC off.
+    Determines 3D RDF with -mono option and PBC off.
     '''
 
     Rcut2 = Rcut * Rcut
@@ -184,9 +184,9 @@ def mono_off_sample(xyz, dr, Rcut, RDF, nAt):
             if d2 <= Rcut2:
                 hist_up(d2, dr, RDF)
 
-def mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file):
+def normalize_on_mono3d(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file):
     '''
-    Normalize de RDF with -mono option and PBC on.
+    Normalize the 3D RDF with -mono option and PBC on.
     '''
 
     volBox = Lx * Ly * Lz
@@ -201,24 +201,10 @@ def mono_on_normalize(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file)
             RDF[binIdx] /= frames_count * volShell
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
-def mono_off_normalize(nAt, dr, nBin, frames_count, RDF, output_file):
-    '''
-    Normalize de RDF with -mono option and PBC off.
-    '''
-
-    prefact = 4 * pi * dr**3
-
-    with open(f'{output_file}.dat', 'w') as f:
-        for binIdx in range(nBin):
-            r = (binIdx + 0.5) * dr
-            volShell = prefact * (binIdx + 0.5)**2
-            RDF[binIdx] /= frames_count * volShell
-            f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
-
-def multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF,
+def normalize_on_multi3d(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF,
                         output_file):
     '''
-    Normalize de RDF with -multi option and PBC on.
+    Normalize the 3D RDF with -multi option and PBC on.
     '''
 
     volBox = Lx * Ly * Lz
@@ -233,9 +219,9 @@ def multi_on_normalize(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF,
             RDF[binIdx] /= frames_count * volShell
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
-def multi_off_normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, output_file):
+def normalize_off3d(dr, nBin, frames_count, RDF, output_file):
     '''
-    Normalize de RDF with -multi option and PBC off.
+    Normalize the 3D RDF without PBC.
     '''
 
     prefact = 4 * pi * dr**3
@@ -245,4 +231,155 @@ def multi_off_normalize(nAt1, nAt2, dr, nBin, frames_count, RDF, output_file):
             r = (binIdx + 0.5) * dr
             volShell = prefact * (binIdx + 0.5)**2
             RDF[binIdx] /= frames_count * volShell
+            f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
+
+def mono_on_sample2d(Lx, Ly, xyz, dr, Rcut, RDF, nAt):
+    '''
+    Determines 2D RDF with -mono option and PBC on.
+    '''
+
+    Rcut2 = Rcut * Rcut
+
+    rx1 = array(xyz[:,1])
+    ry1 = array(xyz[:,2])
+
+    rx2 = array(xyz[:,1])
+    ry2 = array(xyz[:,2])
+
+    # Apply PBC and updates the histogram
+    for i in range(nAt):
+        for j in range(i+1, nAt):
+            dx = rx1[i] - rx2[j]
+            dy = ry1[i] - ry2[j]
+
+            dx = PBC(dx, Lx)
+            dy = PBC(dy, Ly)
+
+            d2 = dx**2 + dy**2
+
+            if d2 <= Rcut2:
+                hist_up(d2, dr, RDF)
+
+def mono_off_sample2d(xyz, dr, Rcut, RDF, nAt):
+    '''
+    Determines 2D RDF with -mono option and PBC off.
+    '''
+
+    Rcut2 = Rcut * Rcut
+
+    rx1 = array(xyz[:,1])
+    ry1 = array(xyz[:,2])
+
+    rx2 = array(xyz[:,1])
+    ry2 = array(xyz[:,2])
+
+    # Updates the histogram
+    for i in range(nAt):
+        for j in range(i+1, nAt):
+            dx = rx1[i] - rx2[j]
+            dy = ry1[i] - ry2[j]
+
+            d2 = dx**2 + dy**2
+
+            if d2 <= Rcut2:
+                hist_up(d2, dr, RDF)
+
+def multi_on_sample2d(Lx, Ly, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+    '''
+    Determines 3D RDF with -multi option and PBC on.
+    '''
+
+    Rcut2 = Rcut * Rcut
+
+    rx1 = array(xyz1[:,1])
+    ry1 = array(xyz1[:,2])
+
+    rx2 = array(xyz2[:,1])
+    ry2 = array(xyz2[:,2])
+
+    # Apply PBC and updates the histogram
+    for i in range(nAt1):
+        for j in range(nAt2):
+            dx = rx1[i] - rx2[j]
+            dy = ry1[i] - ry2[j]
+
+            dx = PBC(dx, Lx)
+            dy = PBC(dy, Ly)
+
+            d2 = dx**2 + dy**2
+
+            if d2 <= Rcut2:
+                hist_up(d2, dr, RDF)
+
+def multi_off_sample2d(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+    '''
+    Determines 2D RDF with -multi option and PBC off.
+    '''
+
+    Rcut2 = Rcut * Rcut
+
+    rx1 = array(xyz1[:,1])
+    ry1 = array(xyz1[:,2])
+
+    rx2 = array(xyz2[:,1])
+    ry2 = array(xyz2[:,2])
+
+    # Updates the histogram
+    for i in range(nAt1):
+        for j in range(nAt2):
+            dx = rx1[i] - rx2[j]
+            dy = ry1[i] - ry2[j]
+
+            d2 = dx**2 + dy**2
+
+            if d2 <= Rcut2:
+                hist_up(d2, dr, RDF)
+
+def normalize_on_mono2d(Lx, Ly, dh, nAt, dr, nBin, frames_count, RDF, output_file):
+    '''
+    Normalize the 2D RDF with -mono option and PBC on.
+    '''
+
+    volBox = Lx * Ly * dh
+    nPairs = nAt * (nAt - 1)
+    RDF *= volBox / nPairs
+    prefact = pi * dh * dr**2
+
+    with open(f'{output_file}.dat', 'w') as f:
+        for binIdx in range(nBin):
+            r = (binIdx + 0.5) * dr
+            volRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= frames_count * volRing
+            f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
+
+def normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count, RDF,
+                        output_file):
+    '''
+    Normalize the 2D RDF with -multi option and PBC on.
+    '''
+
+    volBox = Lx * Ly * dh
+    nPairs = nAt1 * nAt2 * 2
+    RDF *= volBox / nPairs
+    prefact = pi * dh * dr**2
+
+    with open(f'{output_file}.dat', 'w') as f:
+        for binIdx in range(nBin):
+            r = (binIdx + 0.5) * dr
+            volRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= frames_count * volRing
+            f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
+
+def normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file):
+    '''
+    Normalize the 2D RDF without PBC.
+    '''
+
+    prefact = pi * dh * dr**2
+
+    with open(f'{output_file}.dat', 'w') as f:
+        for binIdx in range(nBin):
+            r = (binIdx + 0.5) * dr
+            volRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= frames_count * volRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
