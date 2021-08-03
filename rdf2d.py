@@ -103,7 +103,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf2d_{at1}-{at2}_PBC-on'
+                output_file = f'rdf2d_{at1}-{at2}_PBC-on_height-{h}'
 
             normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -148,7 +148,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf2d_{at}-{at}_PBC-off'
+                output_file = f'rdf2d_{at}-{at}_PBC-off_height-{h}'
 
             normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
 
@@ -191,7 +191,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf2d_{at1}-{at2}_PBC-off'
+                output_file = f'rdf2d_{at1}-{at2}_PBC-off_height-{h}'
 
             normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
 
