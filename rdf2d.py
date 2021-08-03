@@ -57,7 +57,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at}-{at}_PBC-on_height-{h}'
+                output_file = f'RDF3D_{at}-{at}_dr-{dr}_Rcut-{Rcut}_dh-{dh}_PBC'
 
             normalize_on_mono2d(Lx, Ly, dh, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -96,7 +96,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at1}-{at2}_PBC-on_height-{h}'
+                output_file = f'RDF3D_{at1}-{at2}_dr-{dr}_Rcut-{Rcut}_dh-{dh}_PBC'
 
             normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -122,23 +122,34 @@ def main():
             if frame_end == -1:
                 frame_end = total_frames
 
-            for frame in range(frame_start, frame_end):
-                xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
-                nAt = len(xyz)
-                mono_off_sample2d(xyz, dr, Rcut, RDF, nAt)
-                frames_count += 1
+            ##########################################
+            nSlabs = int((Hmax - Hmin)/dh) + 1
+            Hmax = nSlabs * dh + Hmin
 
-            output_file = args.output_file
-            if output_file == None:
-                output_file = f'RDF2D_{at}-{at}_PBC-off_height-{h}'
+            for slabIdx in range(nSlabs):
+                h = (slabIdx + 0.5) * dh + Hmin
 
-            normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
+                for frame in range(frame_start, frame_end):
+                    xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
+                    xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                    nAt = len(xyz)
+                    mono_off_sample2d(xyz, dr, Rcut, RDF, nAt)
+                    frames_count += 1
 
-            elapsed = time() - start # elapsed wall time
-            print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'2D RDF between {at} and {at} was calculated without PBC.')
-            print(f'Output file: {output_file}.dat')
+                output_file = args.output_file
+                if output_file == None:
+                    output_file = f'RDF3D_{at}-{at}_dr-{dr}_Rcut-{Rcut}_dh-{dh}'
+
+                normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
+
+                elapsed = time() - start # elapsed wall time
+                print(f'Job done in {elapsed:.3f} seconds!')
+                print(f'2D RDF between {at} and {at} was calculated without PBC.')
+                print(f'Output file: {output_file}.dat')
+
+                RDF = zeros(nBin) # initialize array of zeros
+
+            ##########################################
 
         elif args.multicomponents:
 
@@ -166,7 +177,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at1}-{at2}_PBC-off_height-{h}'
+                output_file = f'RDF3D_{at1}-{at2}_dr-{dr}_Rcut-{Rcut}_dh-{dh}'
 
             normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
 

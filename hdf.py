@@ -53,7 +53,7 @@ def main():
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'HDF_{at}'
+        output_file = f'HDF_{at}_dh-{dh}'
 
     with open(f'{output_file}.dat', 'w') as f:
         for binIdx in range(nBin):

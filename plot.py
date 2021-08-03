@@ -3,7 +3,7 @@
 '''
     Description: Plots altogether in one plot or one plot each argument.
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: July, 2021.
+    Dated: August, 2021.
 '''
 
 import argparse
@@ -11,19 +11,14 @@ from pandas import read_csv
 from cycler import cycler
 import matplotlib.pyplot as plt
 
-plt.rcParams["font.weight"] = "bold"
-plt.rcParams["axes.labelweight"] = "bold"
-plt.rcParams.update({'font.size': 35})
-
-plt.rcParams['lines.linewidth'] = 3
-plt.rcParams['axes.linewidth'] = 3
-plt.rcParams['xtick.major.size'] = 10
-plt.rcParams['xtick.major.width'] = 3
-plt.rcParams['ytick.major.size'] = 10
-plt.rcParams['ytick.major.width'] = 3
-
-V, N, R, Az, Az_claro, Am = '#00a189', '#fa6200', '#ed3b3b', '#5ca2f7', '#97C4FA', '#ebe842'
-plt.rcParams['axes.prop_cycle'] = cycler(color=[V, N, R, Az, Am, Az_claro])
+plt.rc('font', weight = 'bold', size = 20)
+plt.rc('lines', linewidth = 3)
+V, N, R, Az, = '#00a189', '#fa6200', '#ed3b3b', '#5ca2f7'
+plt.rc('axes', labelweight = 'bold', linewidth = 3, prop_cycle = cycler(color=[V, N, R, Az, 'c', 'm', 'y', 'k']))
+plt.rc('xtick.major', size = 10, width = 3)
+plt.rc('ytick.major', size = 10, width = 3)
+plt.rc('legend', loc='best', frameon = True, fancybox = True, fontsize = 10)
+plt.rc('figure', autolayout = True)
 
 def main():
 
@@ -48,7 +43,7 @@ def main():
             file = file.split('.dat', 1)[0]
 
             ax.plot(data[:,0], data[:,1], label = file)
-            ax.legend(loc='upper right', fontsize=15)
+            ax.legend()
             if lx != None:
                 ax.set_xlabel(f'{lx}')
             if ly != None:
@@ -66,16 +61,6 @@ def main():
                 for line in hl:
                     ax.axhline(float(line), c = 'black', lw = 1.5, ls = ':')
 
-            # for bin in range(221):
-            #     h = (bin + 0.5) * 0.1
-            #     ax.axvline(float(h), c = 'black', lw = 1.5, ls = ':')
-            #
-            # ax.axvline(float(11.85), c = 'blue', lw = 2, ls = '-')
-            # ax.axvline(float(11.75), c = 'red', lw = 2, ls = '-')
-            # ax.axvline(float(11.95), c = 'red', lw = 2, ls = '-')
-
-            plt.tight_layout()
-
             plt.savefig(f'{file}.png')
             print(f'Image file: {file}.png')
 
@@ -88,10 +73,10 @@ def main():
         for file in list:
             data = read_csv(f'{file}').to_numpy()
 
-            file = file.split('.', 1)[0]
+            file = file.split('.dat', 1)[0]
 
             ax.plot(data[:,0], data[:,1], label = file)
-            ax.legend(loc='upper right', fontsize=15)
+            ax.legend()
             if lx != None:
                 ax.set_xlabel(f'{lx}')
             if ly != None:
@@ -101,13 +86,13 @@ def main():
             if (bottom != None) and (top != None):
                 ax.set_ylim(float(bottom), float(top))
 
-            plt.tight_layout()
-
         plt.savefig('same.png')
 
         print(f'Image file: same.png')
 
         print('Job done!')
+
+    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
