@@ -17,30 +17,31 @@ from time import time
 def main():
     start = time() # starting wall time
 
+    dr = args.dr
+    Rcut = args.Rcut
+    frames_count = 0
+    frame_start = args.frames[0]
+    if frame_start != 0:
+        frame_start -= 1
+
+    nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+
     if args.periodic_boundary_conditions:
         if args.monocomponent:
 
-            dr = args.dr
-            Rcut = args.Rcut
             at = args.monocomponent
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
             Lmin = 0.5 * min(Lx, Ly, Lz)
             if Rcut > Lmin:
-                print(f'Cannot choose Rcut greater than {Lmin:.2f}. \
-                        This will be the new Rcut value.')
+                print(f'Cannot choose Rcut greater than {Lmin:.2f}.')
+                print('This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
-            frame_end = int(args.frames[1])
+            frame_end = args.frames[1]
             if frame_end == -1:
                 frame_end = total_frames
 
@@ -52,7 +53,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at}-{at}_PBC-on'
+                output_file = f'RDF3D_{at}-{at}_PBC-on'
 
             normalize_on_mono3d(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -64,8 +65,6 @@ def main():
 
         elif args.multicomponents:
 
-            dr = args.dr
-            Rcut = args.Rcut
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
 
@@ -73,19 +72,13 @@ def main():
 
             Lmin = 0.5 * min(Lx, Ly, Lz)
             if Rcut > Lmin:
-                print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will \
-                        be the new Rcut value.')
+                print(f'Cannot choose Rcut greater than {Lmin:.2f}.')
+                print('This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
-            frame_end = int(args.frames[1])
+            frame_end = args.frames[1]
             if frame_end == -1:
                 frame_end = total_frames
 
@@ -98,7 +91,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at1}-{at2}_PBC-on'
+                output_file = f'RDF3D_{at1}-{at2}_PBC-on'
 
             normalize_on_multi3d(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -114,21 +107,13 @@ def main():
     else:
         if args.monocomponent:
 
-            dr = args.dr
-            Rcut = args.Rcut
             at = args.monocomponent
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
-            frame_end = int(args.frames[1])
+            frame_end = args.frames[1]
             if frame_end == -1:
                 frame_end = total_frames
 
@@ -140,7 +125,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at}-{at}_PBC-off'
+                output_file = f'RDF3D_{at}-{at}_PBC-off'
 
             normalize_off3d(dr, nBin, frames_count, RDF, output_file)
 
@@ -151,22 +136,14 @@ def main():
 
         elif args.multicomponents:
 
-            dr = args.dr
-            Rcut = args.Rcut
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = user_file_multi(args.input_file, at1, at2)
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
-            frame_end = int(args.frames[1])
+            frame_end = args.frames[1]
             if frame_end == -1:
                 frame_end = total_frames
 
@@ -179,7 +156,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf3d_{at1}-{at2}_PBC-off'
+                output_file = f'RDF3D_{at1}-{at2}_PBC-off'
 
             normalize_off3d(dr, nBin, frames_count, RDF, output_file)
 
@@ -214,7 +191,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")
 
-    parser.add_argument('-f', '--frames', nargs = 2, default = [0, -1],
+    parser.add_argument('-f', '--frames', type = int, nargs = 2, default = [0, -1],
                         help = "Choose starting and ending frames to compute.")
 
     args = parser.parse_args()

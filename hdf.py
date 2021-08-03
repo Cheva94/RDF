@@ -18,39 +18,46 @@ def main():
 
     dh = args.dh
     at = args.at
+    Hmin = args.Hcut[0]
+    Hmax = args.Hcut[1]
 
     total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
-    nBin, Lz, HDF = hist_init(dh, Lz)
+    if Hmax == -1:
+        Hmax = Lz
+
+    nBin, Hmax, HDF = hist_init(Hmin, Hmax, dh)
 
     frames_count = 0
     rows = nAtTot + 2
 
-    frame_start = int(args.frames[0])
+    frame_start = args.frames[0]
     if frame_start != 0:
         frame_start -= 1
-    frame_end = int(args.frames[1])
+    frame_end = args.frames[1]
     if frame_end == -1:
         frame_end = total_frames
 
     for frame in range(frame_start, frame_end):
         xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-        xyz = xyz[xyz['idAt'] == at].to_numpy()
+        xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] <= Hmax)].to_numpy()
 
         dz = array(xyz[:,3])
+
+        nAt = len(xyz)
         for i in range(nAt):
-            binIdx = int(dz[i]/dh)
+            binIdx = int((dz[i] - Hmin)/dh)
             HDF[binIdx] += 1
 
         frames_count += 1
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'hdf_{at}'
+        output_file = f'HDF_{at}'
 
     with open(f'{output_file}.dat', 'w') as f:
         for binIdx in range(nBin):
-            h = (binIdx + 0.5) * dh
+            h = (binIdx + 0.5) * dh + Hmin
             HDF[binIdx] /= frames_count
             f.write(f'{h:.2f}, {HDF[binIdx]:.4f} \n')
 
@@ -71,8 +78,11 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")
 
-    parser.add_argument('-f', '--frames', nargs = 2, default = [0, -1],
+    parser.add_argument('-f', '--frames', type = int, nargs = 2, default = [0, -1],
                         help = "Choose starting and ending frames to compute.")
+
+    parser.add_argument('-H', '--Hcut', type = float, nargs = 2, default = [0, -1],
+                        help = "Minimum and maximum heights to be considered.")
 
     args = parser.parse_args()
 

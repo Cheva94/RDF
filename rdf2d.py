@@ -17,13 +17,22 @@ from time import time
 def main():
     start = time() # starting wall time
 
+    dr = args.dr
+    Rcut = args.Rcut
+    frames_count = 0
+    frame_start = int(args.frames[0])
+    if frame_start != 0:
+        frame_start -= 1
+
+    dh = args.dh
+    Hmin = args.Hcut[0]
+    Hmax = args.Hcut[1]
+
+    nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+
     if args.periodic_boundary_conditions:
         if args.monocomponent:
 
-            dr = args.dr
-            Rcut = args.Rcut
-            dh = args.dh
-            h = args.height
             at = args.monocomponent
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
@@ -33,14 +42,8 @@ def main():
                 print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
             frame_end = int(args.frames[1])
             if frame_end == -1:
                 frame_end = total_frames
@@ -54,7 +57,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf2d_{at}-{at}_PBC-on_height-{h}'
+                output_file = f'RDF2D_{at}-{at}_PBC-on_height-{h}'
 
             normalize_on_mono2d(Lx, Ly, dh, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -66,10 +69,6 @@ def main():
 
         elif args.multicomponents:
 
-            dr = args.dr
-            Rcut = args.Rcut
-            dh = args.dh
-            h = args.height
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
 
@@ -80,14 +79,8 @@ def main():
                 print(f'Cannot choose Rcut greater than {Lmin:.2f}. This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
             frame_end = int(args.frames[1])
             if frame_end == -1:
                 frame_end = total_frames
@@ -103,7 +96,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf2d_{at1}-{at2}_PBC-on_height-{h}'
+                output_file = f'RDF2D_{at1}-{at2}_PBC-on_height-{h}'
 
             normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -119,22 +112,12 @@ def main():
     else:
         if args.monocomponent:
 
-            dr = args.dr
-            Rcut = args.Rcut
-            dh = args.dh
-            h = args.height
             at = args.monocomponent
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
             frame_end = int(args.frames[1])
             if frame_end == -1:
                 frame_end = total_frames
@@ -143,12 +126,12 @@ def main():
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
                 xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
                 nAt = len(xyz)
-                mono_off_sample2d(Lx, Ly, xyz, dr, Rcut, RDF, nAt)
+                mono_off_sample2d(xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf2d_{at}-{at}_PBC-off_height-{h}'
+                output_file = f'RDF2D_{at}-{at}_PBC-off_height-{h}'
 
             normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
 
@@ -159,23 +142,15 @@ def main():
 
         elif args.multicomponents:
 
-            dr = args.dr
-            Rcut = args.Rcut
-            dh = args.dh
-            h = args.height
+
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = user_file_multi(args.input_file, at1, at2)
 
-            nBin, Rcut, RDF = hist_init(dr, Rcut)
-
-            frames_count = 0
             rows = nAtTot + 2
 
-            frame_start = int(args.frames[0])
-            if frame_start != 0:
-                frame_start -= 1
+
             frame_end = int(args.frames[1])
             if frame_end == -1:
                 frame_end = total_frames
@@ -191,7 +166,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'rdf2d_{at1}-{at2}_PBC-off_height-{h}'
+                output_file = f'RDF2D_{at1}-{at2}_PBC-off_height-{h}'
 
             normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
 
@@ -227,8 +202,8 @@ if __name__ == "__main__":
     parser.add_argument('dh', type = float, help = "Width of the slab to be \
                         considered")
 
-    parser.add_argument('height', type = float, help = "Height at the center \
-                        of the slab of width dh")
+    parser.add_argument('Hcut', type = float, nargs = 2, default = [0, -1],
+                        help = "Minimum and maximum heights to be considered.")
 
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")

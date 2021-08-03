@@ -43,13 +43,13 @@ def user_file_multi(input_file, atom1, atom2):
 
     return total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all
 
-def hist_init(increment, maximum):
+def hist_init(minimum, maximum, increment):
     '''
     Initialize the histogram.
     '''
 
-    nBin = int(maximum/increment) + 1 # number of bins
-    maximum = nBin * increment # adjust maximum
+    nBin = int((maximum - minimum)/increment) + 1 # number of bins
+    maximum = nBin * increment + minimum# adjust maximum
     H = zeros(nBin) # initialize array of zeros
 
     return nBin, maximum, H
