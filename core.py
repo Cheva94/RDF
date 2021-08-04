@@ -343,13 +343,13 @@ def normalize_on_mono2d(Lx, Ly, dh, nAt, dr, nBin, frames_count, RDF, output_fil
     volBox = Lx * Ly * dh
     nPairs = nAt * (nAt - 1)
     RDF *= volBox / nPairs
-    prefact = pi * dh * dr**2
+    prefact = pi * dr**2
 
     with open(f'{output_file}.dat', 'w') as f:
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
-            volRing = prefact * (2 * binIdx + 1)
-            RDF[binIdx] /= frames_count * volRing
+            surfRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= frames_count * surfRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
 def normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count, RDF,
@@ -361,13 +361,13 @@ def normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count, RDF,
     volBox = Lx * Ly * dh
     nPairs = nAt1 * nAt2 * 2
     RDF *= volBox / nPairs
-    prefact = pi * dh * dr**2
+    prefact = pi * dr**2
 
     with open(f'{output_file}.dat', 'w') as f:
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
-            volRing = prefact * (2 * binIdx + 1)
-            RDF[binIdx] /= frames_count * volRing
+            surfRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= frames_count * surfRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
 def normalize_off2d(dr, nBin, frames_count, RDF, output_file):
@@ -380,6 +380,6 @@ def normalize_off2d(dr, nBin, frames_count, RDF, output_file):
     with open(f'{output_file}.dat', 'w') as f:
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
-            volRing = prefact * (2 * binIdx + 1)
-            RDF[binIdx] /= frames_count * volRing
+            surfRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= frames_count * surfRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
