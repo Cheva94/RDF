@@ -17,7 +17,7 @@ V, N, R, Az, = '#00a189', '#fa6200', '#ed3b3b', '#5ca2f7'
 plt.rc('axes', labelweight = 'bold', linewidth = 3, prop_cycle = cycler(color=[V, N, R, Az, 'c', 'm', 'y', 'k']))
 plt.rc('xtick.major', size = 10, width = 3)
 plt.rc('ytick.major', size = 10, width = 3)
-plt.rc('legend', loc='best', frameon = True, fancybox = True, fontsize = 10)
+plt.rc('legend', loc='best', frameon = True, fancybox = True, fontsize = 20)
 plt.rc('figure', autolayout = True)
 
 def main():
@@ -40,7 +40,7 @@ def main():
 
             data = read_csv(f'{file}').to_numpy()
 
-            file = file.split('.dat', 1)[0]
+            file = file.split('.dat', 1)[0].split('_', 1)[1]
 
             ax.plot(data[:,0], data[:,1], label = file)
             ax.legend()
@@ -73,7 +73,7 @@ def main():
         for file in list:
             data = read_csv(f'{file}').to_numpy()
 
-            file = file.split('.dat', 1)[0]
+            file = file.split('.dat', 1)[0].split('_', 1)[1]
 
             ax.plot(data[:,0], data[:,1], label = file)
             ax.legend()

@@ -57,7 +57,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at}-{at}_dr-{dr}_Rcut-{Rcut}_dh-{dh}_PBC'
+                output_file = f'RDF2D_{at}-{at}_dr-{dr}_Rcut-{Rcut:.1f}_dh-{dh}_PBC'
 
             normalize_on_mono2d(Lx, Ly, dh, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -96,7 +96,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at1}-{at2}_dr-{dr}_Rcut-{Rcut}_dh-{dh}_PBC'
+                output_file = f'RDF2D_{at1}-{at2}_dr-{dr}_Rcut-{Rcut:.1f}_dh-{dh}_PBC'
 
             normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -122,7 +122,6 @@ def main():
             if frame_end == -1:
                 frame_end = total_frames
 
-            ##########################################
             nSlabs = int((Hmax - Hmin)/dh) + 1
             Hmax = nSlabs * dh + Hmin
 
@@ -138,9 +137,9 @@ def main():
 
                 output_file = args.output_file
                 if output_file == None:
-                    output_file = f'RDF3D_{at}-{at}_dr-{dr}_Rcut-{Rcut}_dh-{dh}'
+                    output_file = f'RDF2D_{at}-{at}_dr-{dr}_Rcut-{Rcut:.1f}_dh-{dh}_h-{h:.2f}'
 
-                normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
+                normalize_off2d(dr, nBin, frames_count, RDF, output_file)
 
                 elapsed = time() - start # elapsed wall time
                 print(f'Job done in {elapsed:.3f} seconds!')
@@ -148,8 +147,6 @@ def main():
                 print(f'Output file: {output_file}.dat')
 
                 RDF = zeros(nBin) # initialize array of zeros
-
-            ##########################################
 
         elif args.multicomponents:
 
@@ -166,25 +163,33 @@ def main():
             if frame_end == -1:
                 frame_end = total_frames
 
-            for frame in range(frame_start, frame_end):
-                xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
-                xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
-                nAt1 = len(xyz1)
-                nAt2 = len(xyz2)
-                multi_off_sample2d(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
-                frames_count += 1
+            nSlabs = int((Hmax - Hmin)/dh) + 1
+            Hmax = nSlabs * dh + Hmin
 
-            output_file = args.output_file
-            if output_file == None:
-                output_file = f'RDF3D_{at1}-{at2}_dr-{dr}_Rcut-{Rcut}_dh-{dh}'
+            for slabIdx in range(nSlabs):
+                h = (slabIdx + 0.5) * dh + Hmin
 
-            normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file)
+                for frame in range(frame_start, frame_end):
+                    xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
+                    xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                    xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                    nAt1 = len(xyz1)
+                    nAt2 = len(xyz2)
+                    multi_off_sample2d(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
+                    frames_count += 1
 
-            elapsed = time() - start # elapsed wall time
-            print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'2D RDF between {at1} and {at2} was calculated without PBC.')
-            print(f'Output file: {output_file}.dat')
+                output_file = args.output_file
+                if output_file == None:
+                    output_file = f'RDF2D_{at1}-{at2}_dr-{dr}_Rcut-{Rcut:.1f}_dh-{dh}_h-{h:.2f}'
+
+                normalize_off2d(dr, nBin, frames_count, RDF, output_file)
+
+                elapsed = time() - start # elapsed wall time
+                print(f'Job done in {elapsed:.3f} seconds!')
+                print(f'2D RDF between {at1} and {at2} was calculated without PBC.')
+                print(f'Output file: {output_file}.dat')
+
+                RDF = zeros(nBin) # initialize array of zeros
 
         else:
             print('Must choose mono or multi, and select elements to compare.')

@@ -370,12 +370,12 @@ def normalize_on_multi2d(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count, RDF,
             RDF[binIdx] /= frames_count * volRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
-def normalize_off2d(dh, dr, nBin, frames_count, RDF, output_file):
+def normalize_off2d(dr, nBin, frames_count, RDF, output_file):
     '''
     Normalize the 2D RDF without PBC.
     '''
 
-    prefact = pi * dh * dr**2
+    prefact = pi * dr**2
 
     with open(f'{output_file}.dat', 'w') as f:
         for binIdx in range(nBin):
