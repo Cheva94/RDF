@@ -28,6 +28,7 @@ def main():
 
     if args.periodic_boundary_conditions:
         if args.monocomponent:
+            print(f'Running 3D RDF between {at} and {at} with PBC.')
 
             at = args.monocomponent
 
@@ -60,10 +61,10 @@ def main():
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at} and {at} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
+            print(f'Running 3D RDF between {at1} and {at2} with PBC.')
 
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
@@ -98,7 +99,6 @@ def main():
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at1} and {at2} was calculated with PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:
@@ -106,6 +106,7 @@ def main():
 
     else:
         if args.monocomponent:
+            print(f'Running 3D RDF between {at} and {at} without PBC.')
 
             at = args.monocomponent
 
@@ -131,10 +132,10 @@ def main():
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at} and {at} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
+            print(f'Running 3D RDF between {at1} and {at2} without PBC.')
 
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
@@ -162,7 +163,6 @@ def main():
 
             elapsed = time() - start # elapsed wall time
             print(f'Job done in {elapsed:.3f} seconds!')
-            print(f'3D RDF between {at1} and {at2} was calculated without PBC.')
             print(f'Output file: {output_file}.dat')
 
         else:

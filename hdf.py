@@ -14,6 +14,8 @@ from numpy import array
 from time import time
 
 def main():
+    print(f'Running HDF for {at}.')
+    
     start = time() # starting wall time
 
     dh = args.dh
@@ -63,7 +65,6 @@ def main():
 
     elapsed = time() - start # elapsed wall time
     print(f'Job done in {elapsed:.3f} seconds!')
-    print(f'HDF for {at} was calculated.')
     print(f'Output file: {output_file}.dat')
 
 if __name__ == "__main__":
