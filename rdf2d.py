@@ -32,9 +32,8 @@ def main():
 
     if args.periodic_boundary_conditions:
         if args.monocomponent:
-            print(f'Running 2D RDF between {at} and {at} with PBC.')
-
             at = args.monocomponent
+            print(f'Running 2D RDF between {at} and {at} with PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
@@ -51,7 +50,7 @@ def main():
 
             for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] < h + 0.5 * dh)].to_numpy()
                 nAt = len(xyz)
                 mono_on_sample2d(Lx, Ly, xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
@@ -68,10 +67,9 @@ def main():
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
-            print(f'Running 2D RDF between {at1} and {at2} with PBC.')
-            
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
+            print(f'Running 2D RDF between {at1} and {at2} with PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = user_file_multi(args.input_file, at1, at2)
 
@@ -88,8 +86,8 @@ def main():
 
             for frame in range(frame_start, frame_end):
                 xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
-                xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] < h + 0.5 * dh)].to_numpy()
+                xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] < h + 0.5 * dh)].to_numpy()
                 nAt1 = len(xyz1)
                 nAt2 = len(xyz2)
                 multi_on_sample2d(Lx, Ly, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
@@ -111,9 +109,8 @@ def main():
 
     else:
         if args.monocomponent:
-            print(f'Running 2D RDF between {at} and {at} without PBC.')
-
             at = args.monocomponent
+            print(f'Running 2D RDF between {at} and {at} without PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
@@ -123,16 +120,18 @@ def main():
             if frame_end == -1:
                 frame_end = total_frames
 
-            nSlabs = int((Hmax - Hmin)/dh) + 1
+            nSlabs = int((Hmax - Hmin)/dh)
             Hmax = nSlabs * dh + Hmin
 
             for slabIdx in range(nSlabs):
                 h = (slabIdx + 0.5) * dh + Hmin
+                nAtAvg = 0
 
                 for frame in range(frame_start, frame_end):
                     xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                    xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                    xyz = xyz[(xyz['idAt'] == at) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] < h + 0.5 * dh)].to_numpy()
                     nAt = len(xyz)
+                    nAtAvg += nAt
                     mono_off_sample2d(xyz, dr, Rcut, RDF, nAt)
                     frames_count += 1
 
@@ -146,35 +145,39 @@ def main():
                 print(f'Job done in {elapsed:.3f} seconds!')
                 print(f'Output file: {output_file}.dat')
 
-                RDF = zeros(nBin) # initialize array of zeros
+                RDF = zeros(nBin)
+                print(f'There are {nAtAvg/frames_count:.1f} {at} atoms on average within this slab.')
+                frames_count = 0
 
         elif args.multicomponents:
-            print(f'Running 2D RDF between {at1} and {at2} without PBC.')
-
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
+            print(f'Running 2D RDF between {at1} and {at2} without PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = user_file_multi(args.input_file, at1, at2)
 
             rows = nAtTot + 2
 
-
             frame_end = int(args.frames[1])
             if frame_end == -1:
                 frame_end = total_frames
 
-            nSlabs = int((Hmax - Hmin)/dh) + 1
+            nSlabs = int((Hmax - Hmin)/dh)
             Hmax = nSlabs * dh + Hmin
 
             for slabIdx in range(nSlabs):
                 h = (slabIdx + 0.5) * dh + Hmin
+                nAtAvg1 = 0
+                nAtAvg2 = 0
 
                 for frame in range(frame_start, frame_end):
                     xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-                    xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
-                    xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] <= h + 0.5 * dh)].to_numpy()
+                    xyz1 = xyz[(xyz['idAt'] == at1) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] < h + 0.5 * dh)].to_numpy()
+                    xyz2 = xyz[(xyz['idAt'] == at2) & (h - 0.5 * dh <= xyz['rz']) & (xyz['rz'] < h + 0.5 * dh)].to_numpy()
                     nAt1 = len(xyz1)
+                    nAtAvg1 += nAt1
                     nAt2 = len(xyz2)
+                    nAtAvg2 += nAt2
                     multi_off_sample2d(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                     frames_count += 1
 
@@ -188,7 +191,9 @@ def main():
                 print(f'Job done in {elapsed:.3f} seconds!')
                 print(f'Output file: {output_file}.dat')
 
-                RDF = zeros(nBin) # initialize array of zeros
+                RDF = zeros(nBin)
+                print(f'There are {nAtAvg1/frames_count:.1f} {at1} atoms and {nAtAvg2/frames_count:.1f} {at2} atoms on average within this slab.')
+                frames_count = 0
 
         else:
             print('Must choose mono or multi, and select elements to compare.')
@@ -214,11 +219,11 @@ if __name__ == "__main__":
     parser.add_argument('Rcut', type = float, help = "Maximum radius to be \
                         considered in the RDF.")
 
-    parser.add_argument('dh', type = float, help = "Width of the slab to be \
-                        considered")
-
     parser.add_argument('Hcut', type = float, nargs = 2, default = [0, -1],
                         help = "Minimum and maximum heights to be considered.")
+
+    parser.add_argument('dh', type = float, help = "Width of the slab to be \
+                        considered")
 
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")

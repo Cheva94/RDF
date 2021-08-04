@@ -28,9 +28,8 @@ def main():
 
     if args.periodic_boundary_conditions:
         if args.monocomponent:
-            print(f'Running 3D RDF between {at} and {at} with PBC.')
-
             at = args.monocomponent
+            print(f'Running 3D RDF between {at} and {at} with PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
@@ -64,10 +63,9 @@ def main():
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
-            print(f'Running 3D RDF between {at1} and {at2} with PBC.')
-
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
+            print(f'Running 3D RDF between {at1} and {at2} with PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = user_file_multi(args.input_file, at1, at2)
 
@@ -106,9 +104,8 @@ def main():
 
     else:
         if args.monocomponent:
-            print(f'Running 3D RDF between {at} and {at} without PBC.')
-
             at = args.monocomponent
+            print(f'Running 3D RDF between {at} and {at} without PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
@@ -135,10 +132,9 @@ def main():
             print(f'Output file: {output_file}.dat')
 
         elif args.multicomponents:
-            print(f'Running 3D RDF between {at1} and {at2} without PBC.')
-
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
+            print(f'Running 3D RDF between {at1} and {at2} without PBC.')
 
             total_frames, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = user_file_multi(args.input_file, at1, at2)
 

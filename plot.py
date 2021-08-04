@@ -11,13 +11,14 @@ from pandas import read_csv
 from cycler import cycler
 import matplotlib.pyplot as plt
 
-plt.rc('font', weight = 'bold', size = 20)
-plt.rc('lines', linewidth = 3)
+# plt.rc('font', weight = 'bold', size = 20)
+# plt.rc('lines', linewidth = 3)
+plt.rc('font', weight = 'bold', size = 15)
 V, N, R, Az, = '#00a189', '#fa6200', '#ed3b3b', '#5ca2f7'
-plt.rc('axes', labelweight = 'bold', linewidth = 3, prop_cycle = cycler(color=[V, N, R, Az, 'c', 'm', 'y', 'k']))
+plt.rc('axes', labelweight = 'bold', linewidth = 3, prop_cycle = cycler(color=[N, V, 'm', 'y', 'k', 'c', R, Az]))
 plt.rc('xtick.major', size = 10, width = 3)
 plt.rc('ytick.major', size = 10, width = 3)
-plt.rc('legend', loc='best', frameon = True, fancybox = True, fontsize = 20)
+plt.rc('legend', loc='best', frameon = True, fancybox = True, fontsize = 15)
 plt.rc('figure', autolayout = True)
 
 def main():

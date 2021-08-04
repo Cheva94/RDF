@@ -14,14 +14,13 @@ from numpy import array
 from time import time
 
 def main():
-    print(f'Running HDF for {at}.')
-    
     start = time() # starting wall time
 
     dh = args.dh
     at = args.at
     Hmin = args.Hcut[0]
     Hmax = args.Hcut[1]
+    print(f'Running HDF for {at}.')
 
     total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
 
@@ -72,9 +71,9 @@ if __name__ == "__main__":
 
     parser.add_argument('input_file', help = "Path to the xsf input file.")
 
-    parser.add_argument('dh', type = float, help = "Increment to be considered.")
-
     parser.add_argument('at', help = "Atom to be analyzed.")
+
+    parser.add_argument('dh', type = float, help = "Increment to be considered.")
 
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")
