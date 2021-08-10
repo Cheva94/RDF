@@ -45,7 +45,7 @@ def user_file_multi(input_file, atom1, atom2):
 
 def hist_init(minimum, maximum, increment):
     '''
-    Initialize the histogram.
+    Initialize 1D histogram.
     '''
 
     nBin = int((maximum - minimum)/increment) + 1 # number of bins
@@ -53,6 +53,21 @@ def hist_init(minimum, maximum, increment):
     H = zeros(nBin) # initialize array of zeros
 
     return nBin, maximum, H
+
+def hist_init2d(Xmin, Xmax, Ymin, Ymax, increment):
+    '''
+    Initialize 2D histogram.
+    '''
+
+    nBinX = int((Xmax - Xmin)/increment) + 1 # number of bins in X
+    Xmax = nBinX * increment + Xmin # adjust maximum in X
+
+    nBinY = int((Ymax - Ymin)/increment) + 1 # number of bins in Y
+    Ymax = nBinY * increment + Ymin # adjust maximum in X
+
+    H = zeros((nBinX, nBinY)) # initialize array of zeros
+
+    return nBinX, nBinY, Xmax, Ymax, H
 
 def hist_up(data, increment, H):
     '''

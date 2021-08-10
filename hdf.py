@@ -41,7 +41,7 @@ def main():
 
     for frame in range(frame_start, frame_end):
         xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
-        xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] <= Hmax)].to_numpy()
+        xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
 
         dz = array(xyz[:,3])
 
