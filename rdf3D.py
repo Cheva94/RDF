@@ -46,7 +46,7 @@ def main():
                 frames_end = frames_total
 
             for frame in range(frames_start, frames_end):
-                xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows), :]
+                xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz = xyz[xyz['idAt'] == at].to_numpy()
                 sample_on_mono(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
@@ -83,7 +83,7 @@ def main():
                 frames_end = frames_total
 
             for frame in range(frames_start, frames_end):
-                xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows), :]
+                xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
                 xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
                 sample_on_multi(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
@@ -118,7 +118,7 @@ def main():
                 frames_end = frames_total
 
             for frame in range(frames_start, frames_end):
-                xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows), :]
+                xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz = xyz[xyz['idAt'] == at].to_numpy()
                 sample_off_mono(xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
@@ -148,7 +148,7 @@ def main():
                 frames_end = frames_total
 
             for frame in range(frames_start, frames_end):
-                xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows), :]
+                xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
                 xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
                 sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.9
 
 '''
-    Description: Core functions used in 3D RDF.
+    Description: Core functions used in 2D RDF.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: August, 2021.
 '''
@@ -75,52 +75,46 @@ def hist_up(data, increment, H):
 
 def sample_off_mono(xyz, dr, Rcut, RDF, nAt):
     '''
-    Determines 3D RDF in the monocomponent case without PBC.
+    Determines 2D RDF in the monocomponent case without PBC.
     '''
 
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz[:,1])
     ry1 = array(xyz[:,2])
-    rz1 = array(xyz[:,3])
 
     rx2 = array(xyz[:,1])
     ry2 = array(xyz[:,2])
-    rz2 = array(xyz[:,3])
 
     for i in range(nAt):
         for j in range(i+1, nAt):
             dx = rx1[i] - rx2[j]
             dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
 
-            d2 = dx**2 + dy**2 + dz**2
+            d2 = dx**2 + dy**2
 
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
 
 def sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     '''
-    Determines 3D RDF in the multicomponent case without PBC.
+    Determines 2D RDF in the multicomponent case without PBC.
     '''
 
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz1[:,1])
     ry1 = array(xyz1[:,2])
-    rz1 = array(xyz1[:,3])
 
     rx2 = array(xyz2[:,1])
     ry2 = array(xyz2[:,2])
-    rz2 = array(xyz2[:,3])
 
     for i in range(nAt1):
         for j in range(nAt2):
             dx = rx1[i] - rx2[j]
             dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
 
-            d2 = dx**2 + dy**2 + dz**2
+            d2 = dx**2 + dy**2
 
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
@@ -132,62 +126,54 @@ def PBC(dist, length):
 
     return dist - length * int(2*dist/length)
 
-def sample_on_mono(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
+def sample_on_mono(Lx, Ly, xyz, dr, Rcut, RDF, nAt):
     '''
-    Determines 3D RDF in the monocomponent case with PBC.
+    Determines 2D RDF in the monocomponent case with PBC.
     '''
 
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz[:,1])
     ry1 = array(xyz[:,2])
-    rz1 = array(xyz[:,3])
 
     rx2 = array(xyz[:,1])
     ry2 = array(xyz[:,2])
-    rz2 = array(xyz[:,3])
 
     for i in range(nAt):
         for j in range(i+1, nAt):
             dx = rx1[i] - rx2[j]
             dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
 
             dx = PBC(dx, Lx)
             dy = PBC(dy, Ly)
-            dz = PBC(dz, Lz)
 
-            d2 = dx**2 + dy**2 + dz**2
+            d2 = dx**2 + dy**2
 
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
 
-def sample_on_multi(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
+def sample_on_multi(Lx, Ly, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     '''
-    Determines 3D RDF in the multicomponent case with PBC.
+    Determines 2D RDF in the multicomponent case with PBC.
     '''
 
     Rcut2 = Rcut * Rcut
 
     rx1 = array(xyz1[:,1])
     ry1 = array(xyz1[:,2])
-    rz1 = array(xyz1[:,3])
 
     rx2 = array(xyz2[:,1])
     ry2 = array(xyz2[:,2])
-    rz2 = array(xyz2[:,3])
 
     for i in range(nAt1):
         for j in range(nAt2):
             dx = rx1[i] - rx2[j]
             dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
 
             dx = PBC(dx, Lx)
             dy = PBC(dy, Ly)
-            dz = PBC(dz, Lz)
 
-            d2 = dx**2 + dy**2 + dz**2
+            d2 = dx**2 + dy**2
 
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
@@ -198,27 +184,27 @@ def sample_on_multi(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
 
 def normalize_off(dr, nBin, frames_count, RDF, output_file):
     '''
-    Normalize the 3D RDF without PBC.
+    Normalize the 2D RDF without PBC.
     '''
 
-    prefact = 4 * pi * dr**3
+    prefact = pi * dr**2
 
     RDF /= 0.5 * frames_count
 
     with open(f'{output_file}.csv', 'w') as f:
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
-            volShell = prefact * (binIdx + 0.5)**2
-            RDF[binIdx] /= volShell
+            surfRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= surfRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
-def normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file):
+def normalize_on_mono(Lx, Ly, dh, nAt, dr, nBin, frames_count, RDF, output_file):
     '''
-    Normalize the 3D RDF with PBC in the monocomponent case.
+    Normalize the 2D RDF with PBC in the monocomponent case.
     '''
 
-    prefact = 4 * pi * dr**3
-    volBox = Lx * Ly * Lz
+    prefact = pi * dr**2
+    volBox = Lx * Ly * dh
     nPairs = nAt * (nAt - 1)
 
     RDF *= (2 * volBox) / (nPairs * frames_count)
@@ -226,18 +212,18 @@ def normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file)
     with open(f'{output_file}.csv', 'w') as f:
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
-            volShell = prefact * (binIdx + 0.5)**2
-            RDF[binIdx] /= volShell
+            surfRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= surfRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
 
-def normalize_on_multi(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF,
+def normalize_on_multi(Lx, Ly, dh, nAt1, nAt2, dr, nBin, frames_count, RDF,
                         output_file):
     '''
-    Normalize the 3D RDF with PBC in the multicomponent case.
+    Normalize the 2D RDF with PBC in the multicomponent case.
     '''
 
-    prefact = 4 * pi * dr**3
-    volBox = Lx * Ly * Lz
+    prefact = pi * dr**2
+    volBox = Lx * Ly * dh
     nPairs = nAt1 * nAt2 * 2
 
     RDF *= (2 * volBox) / (nPairs * frames_count)
@@ -245,6 +231,6 @@ def normalize_on_multi(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF,
     with open(f'{output_file}.csv', 'w') as f:
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
-            volShell = prefact * (binIdx + 0.5)**2
-            RDF[binIdx] /= volShell
+            surfRing = prefact * (2 * binIdx + 1)
+            RDF[binIdx] /= surfRing
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
