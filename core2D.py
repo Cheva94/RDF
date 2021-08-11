@@ -50,13 +50,13 @@ def userfile_multi(input_file, atom1, atom2):
 ######################## Histogramming functions
 ################################################################################
 
-def hist_init(minimum, maximum, increment):
+def hist_init(maximum, increment):
     '''
     Initialize 2D histogram.
     '''
 
-    nBin = int((maximum - minimum)/increment) + 1
-    maximum = nBin * increment + minimum
+    nBin = int(maximum/increment) + 1
+    maximum = nBin * increment
     H = zeros(nBin)
 
     return nBin, maximum, H

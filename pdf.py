@@ -2,84 +2,55 @@
 
 '''
     Calculation: Plane Distribution Function (PDF).
-    Description: Determines de PDF over XY plane when given a xsf file.
+    Description: Determines the PDF over XY plane when given a xsf file.
                 Everything is in Angstrom.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: August, 2021.
 '''
 
 import argparse
-from core import user_file_mono, hist_init2d
-from numpy import array
+from coreHP import *
 from time import time
 
 def main():
-    start = time() # starting wall time
+    start = time()
 
-    at = args.at
     dxy = args.dxy
-    # dh = args.dh
     Hmin = args.Hcut[0]
     Hmax = args.Hcut[1]
-    print(f'Running PDF for {at}.')
-
-    total_frames, Lx, Ly, Lz, nAtTot, nAt, xyz_all = user_file_mono(args.input_file, at)
-
-    nBinX, nBinY, Lx, Ly, PDF = hist_init2d(0, Lx, 0, Ly, dxy)
+    at = args.at
 
     frames_count = 0
+    frames_start = args.frames[0]
+    if frames_start != 0:
+        frames_start -= 1
+
+    print(f'Running PDF for {at} atoms.')
+
+    frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
+
+    nBinX, nBinY, Lx, Ly, PDF = hist_init_pdf(Lx, Ly, dxy)
+
     rows = nAtTot + 2
 
-    frame_start = args.frames[0]
-    if frame_start != 0:
-        frame_start -= 1
-    frame_end = args.frames[1]
-    if frame_end == -1:
-        frame_end = total_frames
+    frames_end = args.frames[1]
+    if frames_end == -1:
+        frames_end = frames_total
 
-    for frame in range(frame_start, frame_end):
-        xyz = xyz_all.iloc[(frame*rows + 2):((frame+1)*rows) , :]
+    for frame in range(frames_start, frames_end):
+        xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
         xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
-
-        dx = array(xyz[:,1])
-        dy = array(xyz[:,2])
-
         nAt = len(xyz)
-
-        for i in range(nAt):
-            if dx[i] <= 0:
-                dx[i] += Lx
-            elif dx[i] > Lx:
-                dx[i] -= Lx
-            binIdxX = int(dx[i]/dxy)
-
-            if dy[i] <= 0:
-                dy[i] += Ly
-            elif dy[i] > Ly:
-                dy[i] -= Ly
-            binIdxY = int(dy[i]/dxy)
-
-            PDF[binIdxX, binIdxY] += 1
-
+        sample_pdf(Lx, Ly, xyz, dxy, PDF, nAt)
         frames_count += 1
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'PDF_{at}'#_dh-{dh}'
+        output_file = f'PDF:{at}_H:{Hmin}-{Hmax:.1f}_dxy:{dxy}'
 
-    with open(f'{output_file}.csv', 'w') as f:
-        for binIdxX in range(nBinX):
-            for binIdxY in range(nBinY):
-                x = (binIdxX + 0.5) * dxy
-                y = (binIdxY + 0.5) * dxy
-                PDF[binIdxX, binIdxY] /= frames_count
-                if PDF[binIdxX, binIdxY] == 0:
-                    continue
-                else:
-                    f.write(f'{x:.2f}, {y:.2f}, {PDF[binIdxX, binIdxY]:.4f} \n')
+    normalize_pdf(dxy, nBinX, nBinY, frames_count, PDF, output_file)
 
-    elapsed = time() - start # elapsed wall time
-    print(f'Job done in {elapsed:.3f} seconds!')
+    print(f'Job done in {(time() - start):.3f} seconds!')
     print(f'Output file: {output_file}.csv')
 
 if __name__ == "__main__":
@@ -95,14 +66,11 @@ if __name__ == "__main__":
     parser.add_argument('Hcut', type = float, nargs = 2, default = [0, -1],
                         help = "Minimum and maximum heights to be considered.")
 
-    # parser.add_argument('dh', type = float, help = "Width of the slab to be \
-    #                     considered")
+    parser.add_argument('-f', '--frames', nargs = 2, default = [0, -1], type = int,
+                        help = "Choose starting and ending frames to compute.")
 
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")
-
-    parser.add_argument('-f', '--frames', nargs = 2, default = [0, -1], type = int,
-                        help = "Choose starting and ending frames to compute.")
 
     args = parser.parse_args()
 

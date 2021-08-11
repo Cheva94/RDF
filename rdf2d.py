@@ -2,7 +2,7 @@
 
 '''
     Calculation: 2D Radial Distribution Function (RDF).
-    Description: Determines de 2D RDF when given a xsf file. The comparison can
+    Description: Determines the 2D RDF when given a xsf file. The comparison can
                 be made between the same kind of atom (monocomponent) or between
                 different species (multicomponent). Periodic boundary conditions
                 can be turn on with -pbc option. Everything is in Angstrom.
@@ -40,7 +40,7 @@ def main():
                 print('This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
@@ -60,7 +60,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at}-{at}_dh:{Hmin}-{Hmax:.1f}_Rcut:{Rcut:.1f}_dr:{dr}_PBC'
+                output_file = f'RDF2D:{at}-{at}_H:{Hmin}-{Hmax:.1f}_Rcut:{Rcut:.1f}_dr:{dr}_PBC'
 
             normalize_on_mono(Lx, Ly, Hmax - Hmin, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -83,7 +83,7 @@ def main():
                 print('This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
@@ -107,7 +107,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at1}-{at2}_dh:{Hmin}-{Hmax:.1f}_Rcut:{Rcut:.1f}_dr:{dr}_PBC'
+                output_file = f'RDF2D:{at1}-{at2}_H:{Hmin}-{Hmax:.1f}_Rcut:{Rcut:.1f}_dr:{dr}_PBC'
 
             normalize_on_multi(Lx, Ly, Hmax - Hmin, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -127,7 +127,7 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
@@ -147,7 +147,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at}-{at}_dh:{Hmin}-{Hmax}_Rcut:{Rcut}_dr:{dr}'
+                output_file = f'RDF2D:{at}-{at}_H:{Hmin}-{Hmax}_Rcut:{Rcut}_dr:{dr}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
@@ -163,7 +163,7 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = userfile_multi(args.input_file, at1, at2)
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
@@ -187,7 +187,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at1}-{at2}_dh:{Hmin}-{Hmax}_Rcut:{Rcut}_dr:{dr}'
+                output_file = f'RDF2D:{at1}-{at2}_H:{Hmin}-{Hmax}_Rcut:{Rcut}_dr:{dr}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
@@ -210,6 +210,9 @@ if __name__ == "__main__":
     parser.add_argument('dr', type = float, help = "Increment to be considered \
                         for the RDF.")
 
+    parser.add_argument('Hcut', type = float, nargs = 2, default = [0, -1],
+                        help = "Minimum and maximum heights to be considered.")
+
     parser.add_argument('-f', '--frames', type = int, nargs = 2, default = [0, -1],
                         help = "Choose starting and ending frames to compute.")
 
@@ -225,9 +228,6 @@ if __name__ == "__main__":
 
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")
-
-    parser.add_argument('Hcut', type = float, nargs = 2, default = [0, -1],
-                        help = "Minimum and maximum heights to be considered.")
 
     args = parser.parse_args()
 

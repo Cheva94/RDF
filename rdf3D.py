@@ -2,7 +2,7 @@
 
 '''
     Calculation: 3D Radial Distribution Function (RDF).
-    Description: Determines de 3D RDF when given a xsf file. The comparison can
+    Description: Determines the 3D RDF when given a xsf file. The comparison can
                 be made between the same kind of atom (monocomponent) or between
                 different species (multicomponent). Periodic boundary conditions
                 can be turn on with -pbc option. Everything is in Angstrom.
@@ -37,7 +37,7 @@ def main():
                 print('This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
@@ -74,7 +74,7 @@ def main():
                 print('This will be the new Rcut value.')
                 Rcut = Lmin
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
@@ -109,7 +109,7 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
@@ -139,7 +139,7 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = userfile_multi(args.input_file, at1, at2)
 
-            nBin, Rcut, RDF = hist_init(0, Rcut, dr)
+            nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
 
