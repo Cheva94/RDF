@@ -94,7 +94,7 @@ def main():
             else:
                 ax.set_ylabel(f'{ly}')
 
-            disp = ax.scatter(data[:,0], data[:,1], c = data[:,2])
+            disp = ax.scatter(data[:,0], data[:,1], c = data[:,2], cmap = 'summer_r', s=10)
             ax.set_title(name)
             fig.colorbar(disp)
 

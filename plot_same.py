@@ -57,6 +57,7 @@ def main():
             name = f"{name[0]} dxy:{name[2].split('-')[1]} H:{name[1].split('-', 1)[1]}"
 
             ax.scatter(data[:,0], data[:,1], label = name)
+            ax.scatter(data[:,0], data[:,1], label = name, s = 10)
 
     ax.legend()
 
