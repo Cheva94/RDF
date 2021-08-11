@@ -20,7 +20,7 @@ def main():
     Rcut = args.Rcut
     dr = args.dr
     frames_count = 0
-    frames_start = args.frames[0])
+    frames_start = args.frames[0]
     if frames_start != 0:
         frames_start -= 1
 
@@ -60,15 +60,14 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at}-{at}_H:{Hmin}-{Hmax:.1f}_Rcut:{Rcut:.1f}_dr:{dr}_PBC'
+                output_file = f'RDF2D_{at}-{at}_H-{Hmin}-{Hmax:.1f}_Rcut-{Rcut:.1f}_dr-{dr}_PBC'
 
             normalize_on_mono(Lx, Ly, Hmax - Hmin, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
 
             print(f'Job done in {(time() - start):.3f} seconds!')
             print(f'Output file: {output_file}.csv')
-            print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average \
-                    within this slab.')
+            print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average within this slab.')
 
         elif args.multicomponents:
             at1 = args.multicomponents[0]
@@ -107,15 +106,14 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at1}-{at2}_H:{Hmin}-{Hmax:.1f}_Rcut:{Rcut:.1f}_dr:{dr}_PBC'
+                output_file = f'RDF2D_{at1}-{at2}_H-{Hmin}-{Hmax:.1f}_Rcut-{Rcut:.1f}_dr-{dr}_PBC'
 
             normalize_on_multi(Lx, Ly, Hmax - Hmin, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
 
             print(f'Job done in {(time() - start):.3f} seconds!')
             print(f'Output file: {output_file}.csv')
-            print(f'There are {nAtSlab1/frames_count:.2f} {at1} atoms and \
-                    {nAtSlab2/frames_count:.2f} {at2} atoms on average within this slab.')
+            print(f'There are {nAtSlab1/frames_count:.2f} {at1} atoms and {nAtSlab2/frames_count:.2f} {at2} atoms on average within this slab.')
 
         else:
             print('Must choose mono or multi, and select elements to compare.')
@@ -147,14 +145,13 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at}-{at}_H:{Hmin}-{Hmax}_Rcut:{Rcut}_dr:{dr}'
+                output_file = f'RDF2D_{at}-{at}_H-{Hmin}-{Hmax}_Rcut-{Rcut:.1f}_dr-{dr}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
             print(f'Job done in {(time() - start):.3f} seconds!')
             print(f'Output file: {output_file}.csv')
-            print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average \
-                    within this slab.')
+            print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average within this slab.')
 
         elif args.multicomponents:
             at1 = args.multicomponents[0]
@@ -187,14 +184,13 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D:{at1}-{at2}_H:{Hmin}-{Hmax}_Rcut:{Rcut}_dr:{dr}'
+                output_file = f'RDF2D_{at1}-{at2}_H-{Hmin}-{Hmax}_Rcut-{Rcut:.1f}_dr-{dr}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
             print(f'Job done in {(time() - start):.3f} seconds!')
             print(f'Output file: {output_file}.csv')
-            print(f'There are {nAtSlab1/frames_count:.2f} {at1} atoms and \
-                    {nAtSlab2/frames_count:.2f} {at2} atoms on average within this slab.')
+            print(f'There are {nAtSlab1/frames_count:.2f} {at1} atoms and {nAtSlab2/frames_count:.2f} {at2} atoms on average within this slab.')
 
         else:
             print('Must choose mono or multi, and select elements to compare.')

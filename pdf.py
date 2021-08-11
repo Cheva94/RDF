@@ -46,7 +46,7 @@ def main():
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'PDF:{at}_H:{Hmin}-{Hmax:.1f}_dxy:{dxy}'
+        output_file = f'PDF_{at}_H-{Hmin}-{Hmax:.1f}_dxy-{dxy}'
 
     normalize_pdf(dxy, nBinX, nBinY, frames_count, PDF, output_file)
 

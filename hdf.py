@@ -49,7 +49,7 @@ def main():
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'HDF:{at}_H:{Hmin}-{Hmax:.1f}_dh:{dh}'
+        output_file = f'HDF_{at}_H-{Hmin}-{Hmax:.1f}_dh-{dh}'
 
     normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin)
 
