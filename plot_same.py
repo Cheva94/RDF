@@ -56,11 +56,9 @@ def main():
             F.append(name[0])
             name = f"{name[0]} dxy:{name[2].split('-')[1]} H:{name[1].split('-', 1)[1]}"
 
+            ax.scatter(data[:,0], data[:,1], label = name)
+
     ax.legend()
-    if lx != None:
-        ax.set_xlabel(f'{lx}')
-    if ly != None:
-        ax.set_ylabel(f'{ly}')
 
     if (left != None) and (right != None):
         ax.set_xlim(float(left), float(right))
@@ -75,15 +73,62 @@ def main():
             ax.axhline(float(line), c = 'black', lw = 1.5, ls = ':')
 
     if args.rdf3d:
+
+        if lx == None:
+            ax.set_xlabel(f'Distance [A]')
+        else:
+            ax.set_xlabel(f'{lx}')
+
+        if ly == None:
+            ax.set_ylabel(f'g(r) [3D]')
+        else:
+            ax.set_ylabel(f'{ly}')
+
         plt.savefig(f"RDF3D_{'_'.join(F)}.png")
         print(f"Image file: RDF3D_{'_'.join(F)}.png")
+
     elif args.rdf2d:
+
+        if lx == None:
+            ax.set_xlabel(f'Distance [A]')
+        else:
+            ax.set_xlabel(f'{lx}')
+
+        if ly == None:
+            ax.set_ylabel(f'g(r) [2D]')
+        else:
+            ax.set_ylabel(f'{ly}')
+
         plt.savefig(f"RDF2D_{'_'.join(F)}.png")
         print(f"Image file: RDF2D_{'_'.join(F)}.png")
+
     elif args.hdf:
+
+        if lx == None:
+            ax.set_xlabel(f'Height [A]')
+        else:
+            ax.set_xlabel(f'{lx}')
+
+        if ly == None:
+            ax.set_ylabel(f'h(z)')
+        else:
+            ax.set_ylabel(f'{ly}')
+
         plt.savefig(f"HDF_{'_'.join(F)}.png")
         print(f"Image file: HDF_{'_'.join(F)}.png")
+
     else:
+
+        if lx == None:
+            ax.set_xlabel(f'x [A]')
+        else:
+            ax.set_xlabel(f'{lx}')
+
+        if ly == None:
+            ax.set_ylabel(f'y [A]')
+        else:
+            ax.set_ylabel(f'{ly}')
+
         plt.savefig(f"PDF_{'_'.join(F)}.png")
         print(f"Image file: PDF_{'_'.join(F)}.png")
 

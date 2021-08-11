@@ -36,12 +36,45 @@ def main():
             if args.rdf3d:
                 name = name.split('_')
                 name = f"{name[0]} dr:{name[2].split('-')[1]}"
+
+                if lx == None:
+                    ax.set_xlabel(f'Distance [A]')
+                else:
+                    ax.set_xlabel(f'{lx}')
+
+                if ly == None:
+                    ax.set_ylabel(f'g(r) [3D]')
+                else:
+                    ax.set_ylabel(f'{ly}')
+
             elif args.rdf2d:
                 name = name.split('_')
                 name = f"{name[0]} dr:{name[3].split('-')[1]} H:{name[1].split('-', 1)[1]}"
+
+                if lx == None:
+                    ax.set_xlabel(f'Distance [A]')
+                else:
+                    ax.set_xlabel(f'{lx}')
+
+                if ly == None:
+                    ax.set_ylabel(f'g(r) [2D]')
+                else:
+                    ax.set_ylabel(f'{ly}')
+
             elif args.hdf:
                 name = name.split('_')
                 name = f"{name[0]} dh:{name[2].split('-')[1]}"
+
+                if lx == None:
+                    ax.set_xlabel(f'Height [A]')
+                else:
+                    ax.set_xlabel(f'{lx}')
+
+                if ly == None:
+                    ax.set_ylabel(f'h(z)')
+                else:
+                    ax.set_ylabel(f'{ly}')
+
             else:
                 print('Must choose between --rdf3d (-R3), --rdf2d (-R2) and --hdf (-H).')
                 exit()
@@ -51,11 +84,22 @@ def main():
             name = name.split('_')
             name = f"{name[0]} dxy:{name[2].split('-')[1]} H:{name[1].split('-', 1)[1]}"
 
-        ax.legend()
-        if lx != None:
-            ax.set_xlabel(f'{lx}')
-        if ly != None:
-            ax.set_ylabel(f'{ly}')
+            if lx == None:
+                ax.set_xlabel(f'x [A]')
+            else:
+                ax.set_xlabel(f'{lx}')
+
+            if ly == None:
+                ax.set_ylabel(f'y [A]')
+            else:
+                ax.set_ylabel(f'{ly}')
+
+            disp = ax.scatter(data[:,0], data[:,1], c = data[:,2])
+            ax.set_title(name)
+            fig.colorbar(disp)
+
+        if args.pdf == False:
+            ax.legend()
 
         if (left != None) and (right != None):
             ax.set_xlim(float(left), float(right))
