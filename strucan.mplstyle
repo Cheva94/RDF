@@ -1,0 +1,22 @@
+font.weight : bold
+font.size : 15
+
+# lines.linewidth : 3
+
+axes.labelweight : bold
+axes.linewidth : 3
+
+axes.prop_cycle : cycler('color', ['fa6200', '00a189', 'm', 'y', 'k', 'c', 'ed3b3b', '5ca2f7'])
+
+xtick.major.size : 10
+xtick.major.width : 3
+ytick.major.size : 10
+ytick.major.width : 3
+
+legend.loc : best
+legend.frameon : True
+legend.fancybox : True
+legend.fontsize : 15
+
+figure.figsize : 12, 10
+figure.autolayout : True

@@ -1,8 +1,8 @@
  #!/usr/bin/env python3.9
 
 '''
-    Calculation: Height Distribution Function (HDF).
-    Description: Determines the HDF along Z axis when given a xsf file.
+    Calculation: Plane Distribution Function (PDF).
+    Description: Determines the PDF over XY plane when given a xsf file.
                 Everything is in Angstrom.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: August, 2021.
@@ -15,7 +15,7 @@ from time import time
 def main():
     start = time()
 
-    dh = args.dh
+    dxy = args.dxy
     Hmin = args.Hcut[0]
     Hmax = args.Hcut[1]
     at = args.at
@@ -25,14 +25,11 @@ def main():
     if frames_start != 0:
         frames_start -= 1
 
-    print(f'Running HDF for {at} atoms.')
+    print(f'Running PDF for {at} atoms.')
 
     frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
-    if Hmax == -1:
-        Hmax = Lz
-
-    nBin, Hmax, HDF = hist_init_hdf(Hmin, Hmax, dh)
+    nBinX, nBinY, Lx, Ly, PDF = hist_init_pdf(Lx, Ly, dxy)
 
     rows = nAtTot + 2
 
@@ -44,14 +41,14 @@ def main():
         xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
         xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
         nAt = len(xyz)
-        sample_hdf(xyz, dh, HDF, nAt, Hmin)
+        sample_pdf(Lx, Ly, xyz, dxy, PDF, nAt)
         frames_count += 1
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'HDF_{at}_H-{Hmin}-{Hmax:.1f}_dh-{dh}'
+        output_file = f'PDF_{at}_H-{Hmin}-{Hmax:.1f}_dxy-{dxy}'
 
-    normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin)
+    normalize_pdf(dxy, nBinX, nBinY, frames_count, PDF, output_file)
 
     print(f'Job done in {(time() - start):.3f} seconds!')
     print(f'Output file: {output_file}.csv')
@@ -63,16 +60,17 @@ if __name__ == "__main__":
 
     parser.add_argument('at', help = "Atom to be analyzed.")
 
-    parser.add_argument('dh', type = float, help = "Increment to be considered.")
+    parser.add_argument('dxy', type = float, help = "Increment to be considered \
+                        along x and y axis.")
 
-    parser.add_argument('-f', '--frames', type = int, nargs = 2, default = [0, -1],
+    parser.add_argument('Hcut', type = float, nargs = 2, default = [0, -1],
+                        help = "Minimum and maximum heights to be considered.")
+
+    parser.add_argument('-f', '--frames', nargs = 2, default = [0, -1], type = int,
                         help = "Choose starting and ending frames to compute.")
 
     parser.add_argument('-o', '--output_file', help = "Path to the output file. \
                         If not given, the default name will be used.")
-
-    parser.add_argument('-H', '--Hcut', type = float, nargs = 2, default = [0, -1],
-                        help = "Minimum and maximum heights to be considered.")
 
     args = parser.parse_args()
 
