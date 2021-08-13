@@ -16,7 +16,7 @@ ytick.major.width : 3
 legend.loc : best
 legend.frameon : True
 legend.fancybox : True
-legend.fontsize : 15
+legend.fontsize : 12
 
 figure.figsize : 12, 10
 figure.autolayout : True

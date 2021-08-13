@@ -58,7 +58,14 @@ def main():
 
             ax.scatter(data[:,0], data[:,1], label = name, s = 10)
 
-    ax.legend(loc='best', bbox_to_anchor=(0.5, 0., 0.5, 0.5), ncol = 1)
+    cols = len(L)
+
+    if (cols % 2) == 0:
+       cols = int(cols*0.5)
+    else:
+       cols = int(cols*0.5) + 1
+
+    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol = cols)
 
     if (left != None) and (right != None):
         ax.set_xlim(float(left), float(right))
