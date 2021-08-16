@@ -11,7 +11,7 @@
 '''
 
 import argparse
-from core3D import *
+from core.core3D import *
 from time import time
 
 def main():
