@@ -205,17 +205,12 @@ def normalize_off(dr, nBin, frames_count, RDF, output_file):
 
     RDF /= 0.5 * frames_count
 
-    suma = 0
     with open(f'{output_file}.csv', 'w') as f:
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
             volShell = prefact * (binIdx + 0.5)**2
             RDF[binIdx] /= volShell
-            suma += RDF[binIdx]
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
-            # f.write(f'{RDF[binIdx]:.4f} \n')
-
-    print(f'La suma es {suma:.3f}.')
 
 def normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file):
     '''

@@ -100,18 +100,6 @@ def sample_pdf(Lx, Ly, xyz, dxy, PDF, nAt):
     ry = array(xyz[:,2])
 
     for i in range(nAt):
-
-        if rx[i] <= 0:
-            rx[i] += Lx
-        elif rx[i] > Lx:
-            rx[i] -= Lx
-
-
-        if ry[i] <= 0:
-            ry[i] += Ly
-        elif ry[i] > Ly:
-            ry[i] -= Ly
-
         hist_up_pdf(rx[i], ry[i], dxy, PDF)
 
 ################################################################################
