@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    plt.style.use('core/strucan.mplstyle')
+    plt.style.use('strucan')
 
     left = args.x_axis[0]
     right = args.x_axis[1]
@@ -62,8 +62,7 @@ def main():
                     ax.set_ylabel(f'{ly}')
 
             elif args.hdf:
-                name = name.split('_')
-                name = f"{name[0]} dh:{name[2].split('-')[1]}"
+                name = name.split('_')[1]
 
                 if lx == None:
                     ax.set_xlabel(f'Height [A]')
@@ -81,9 +80,6 @@ def main():
 
             ax.plot(data[:,0], data[:,1], label = name)
         else:
-            name = name.split('_')
-            name = f"{name[0]} dxy:{name[2].split('-')[1]} H:{name[1].split('-', 1)[1]}"
-
             if lx == None:
                 ax.set_xlabel(f'x [A]')
             else:

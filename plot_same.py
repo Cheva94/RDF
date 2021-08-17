@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    plt.style.use('core/strucan.mplstyle')
+    plt.style.use('strucan')
 
     left = args.x_axis[0]
     right = args.x_axis[1]
@@ -31,7 +31,7 @@ def main():
 
         data = read_csv(f'{file}').to_numpy()
 
-        name = file.split('.csv', 1)[0].split('_', 1)[1]
+        name = file.split('.csv')[0].split('_', 1)[1]
 
         if args.pdf == False:
             if args.rdf3d:
@@ -43,19 +43,15 @@ def main():
                 F.append(name[0])
                 name = f"{name[0]} dr:{name[3].split('-')[1]} H:{name[1].split('-', 1)[1]}"
             elif args.hdf:
-                name = name.split('_')
-                F.append(name[0])
-                name = f"{name[0]} dh:{name[2].split('-')[1]}"
+                F.append(name)
             else:
                 print('Must choose between --rdf3d (-R3), --rdf2d (-R2) and --hdf (-H).')
                 exit()
 
             ax.plot(data[:,0], data[:,1], label = name)
         else:
-            name = name.split('_')
-            F.append(name[0])
-            name = f"{name[0]} dxy:{name[2].split('-')[1]} H:{name[1].split('-', 1)[1]}"
-
+            F.append(name)
+            
             ax.scatter(data[:,0], data[:,1], label = name, s = 10)
 
     cols = len(L)
@@ -121,8 +117,8 @@ def main():
         else:
             ax.set_ylabel(f'{ly}')
 
-        plt.savefig(f"HDF_{'_'.join(F)}.png")
-        print(f"Image file: HDF_{'_'.join(F)}.png")
+        plt.savefig(f"plt-s_HDF-{'-'.join(F)}.png")
+        print(f"Image file: plt-s_HDF-{'-'.join(F)}.png")
 
     else:
 

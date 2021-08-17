@@ -49,7 +49,7 @@ def main():
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'HDF_{at}_H-{Hmin}-{Hmax:.1f}_dh-{dh}'
+        output_file = f'HDF_{at}'
 
     normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin)
 
@@ -61,9 +61,9 @@ if __name__ == "__main__":
 
     parser.add_argument('input_file', help = "Path to the xsf input file.")
 
-    parser.add_argument('at', help = "Atom to be analyzed.")
-
     parser.add_argument('dh', type = float, help = "Increment to be considered.")
+
+    parser.add_argument('at', help = "Atom to be analyzed.")
 
     parser.add_argument('-f', '--frames', type = int, nargs = 2, default = [0, -1],
                         help = "Choose starting and ending frames to compute.")
