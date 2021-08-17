@@ -9,7 +9,7 @@
 '''
 
 import argparse
-from coreHP import *
+from core.coreHP import *
 from time import time
 
 def main():

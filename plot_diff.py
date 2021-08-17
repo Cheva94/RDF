@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    plt.style.use('strucan.mplstyle')
+    plt.style.use('core/strucan.mplstyle')
 
     left = args.x_axis[0]
     right = args.x_axis[1]
