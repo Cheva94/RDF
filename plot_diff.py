@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.9
+#!/usr/local/bin/python3.9
 
 '''
     Description: Plots on one plot each argument.

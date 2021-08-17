@@ -1,4 +1,4 @@
- #!/usr/bin/env python3.9
+#!/usr/local/bin/python3.9
 
 '''
     Description: Pre-processing program to consider just the header and the
