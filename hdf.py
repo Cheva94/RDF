@@ -32,7 +32,7 @@ def main():
     if Hmax == -1:
         Hmax = Lz
 
-    nBin, Hmax, HDF = hist_init_hdf(Hmin, Hmax, dh)
+    nBin, histMax, HDF = hist_init_hdf(Hmin, Hmax, dh)
 
     rows = nAtTot + 2
 
