@@ -53,7 +53,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at}-{at}_Rcut-{Rcut:.1f}_dr-{dr}_PBC'
+                output_file = f'RDF3D_{at}-{at}_PBC'
 
             normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -91,7 +91,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at1}-{at2}_Rcut-{Rcut:.1f}_dr-{dr}_PBC'
+                output_file = f'RDF3D_{at1}-{at2}_PBC'
 
             normalize_on_multi(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -125,7 +125,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at}-{at}_Rcut-{Rcut:.1f}_dr-{dr}'
+                output_file = f'RDF3D_{at}-{at}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
@@ -156,7 +156,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at1}-{at2}_Rcut-{Rcut:.1f}_dr-{dr}'
+                output_file = f'RDF3D_{at1}-{at2}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 

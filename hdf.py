@@ -1,12 +1,12 @@
 #!/usr/local/bin/python3.9
 
-# '''
-#     Calculation: Height Distribution Function (HDF).
-#     Description: Determines the HDF along Z axis when given a xsf file.
-#                 Everything is in Angstrom.
-#     Written by: Ignacio J. Chevallier-Boutell.
-#     Dated: August, 2021.
-# '''
+'''
+    Calculation: Height Distribution Function (HDF).
+    Description: Determines the HDF along Z axis when given a xsf file.
+                Everything is in Angstrom.
+    Written by: Ignacio J. Chevallier-Boutell.
+    Dated: August, 2021.
+'''
 
 import argparse
 from core.coreHP import *

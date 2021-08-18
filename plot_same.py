@@ -32,26 +32,15 @@ def main():
         data = read_csv(f'{file}').to_numpy()
 
         name = file.split('.csv')[0].split('_', 1)[1]
+        F.append(name)
 
         if args.pdf == False:
-            if args.rdf3d:
-                name = name.split('_')
-                F.append(name[0])
-                name = f"{name[0]} dr:{name[2].split('-')[1]}"
-            elif args.rdf2d:
-                name = name.split('_')
-                F.append(name[0])
-                name = f"{name[0]} dr:{name[3].split('-')[1]} H:{name[1].split('-', 1)[1]}"
-            elif args.hdf:
-                F.append(name)
+            if args.rdf3d or args.rdf2d or args.hdf:
+                ax.plot(data[:,0], data[:,1], label = name)
             else:
                 print('Must choose between --rdf3d (-R3), --rdf2d (-R2) and --hdf (-H).')
                 exit()
-
-            ax.plot(data[:,0], data[:,1], label = name)
         else:
-            F.append(name)
-            
             ax.scatter(data[:,0], data[:,1], label = name, s = 10)
 
     cols = len(L)
@@ -117,8 +106,8 @@ def main():
         else:
             ax.set_ylabel(f'{ly}')
 
-        plt.savefig(f"plt-s_HDF-{'-'.join(F)}.png")
-        print(f"Image file: plt-s_HDF-{'-'.join(F)}.png")
+        plt.savefig(f"HDF-{'-'.join(F)}.png")
+        print(f"Image file: HDF-{'-'.join(F)}.png")
 
     else:
 

@@ -30,13 +30,10 @@ def main():
 
         data = read_csv(f'{file}').to_numpy()
 
-        name = file.split('.csv', 1)[0].split('_', 1)[1]
+        name = file.split('.csv')[0].split('_', 1)[1]
 
         if args.pdf == False:
             if args.rdf3d:
-                name = name.split('_')
-                name = f"{name[0]} dr:{name[2].split('-')[1]}"
-
                 if lx == None:
                     ax.set_xlabel(f'Distance [A]')
                 else:
@@ -48,9 +45,6 @@ def main():
                     ax.set_ylabel(f'{ly}')
 
             elif args.rdf2d:
-                name = name.split('_')
-                name = f"{name[0]} dr:{name[3].split('-')[1]} H:{name[1].split('-', 1)[1]}"
-
                 if lx == None:
                     ax.set_xlabel(f'Distance [A]')
                 else:
@@ -109,8 +103,8 @@ def main():
             for line in hl:
                 ax.axhline(float(line), c = 'black', lw = 1.5, ls = ':')
 
-        plt.savefig(f"{file.split('.csv', 1)[0]}.png")
-        print(f"Image file: {file.split('.csv', 1)[0]}.png")
+        plt.savefig(f"{file.split('.csv')[0]}.png")
+        print(f"Image file: {file.split('.csv')[0]}.png")
 
     print('Job done!')
 
