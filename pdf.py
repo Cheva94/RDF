@@ -37,12 +37,15 @@ def main():
     if frames_end == -1:
         frames_end = frames_total
 
+    nAtSlab = 0
+
     for frame in range(frames_start, frames_end):
         xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
         xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
         nAt = len(xyz)
         sample_pdf(Lx, Ly, xyz, dxy, PDF, nAt)
         frames_count += 1
+        nAtSlab += nAt
 
     output_file = args.output_file
     if output_file == None:
@@ -52,6 +55,7 @@ def main():
 
     print(f'Job done in {(time() - start):.3f} seconds!')
     print(f'Output file: {output_file}.csv')
+    print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average within this slab.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
