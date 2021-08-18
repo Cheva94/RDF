@@ -60,7 +60,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at}-{at}_z-{Hmin}-{Hmax:.1f}_PBC'
+                output_file = f'RDF2D_{at}-{at}_z-{Hmin:.2f}-{Hmax:.2f}_PBC'
 
             normalize_on_mono(Lx, Ly, Hmax - Hmin, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -106,7 +106,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at1}-{at2}_z-{Hmin}-{Hmax:.1f}_PBC'
+                output_file = f'RDF2D_{at1}-{at2}_z-{Hmin:.2f}-{Hmax:.2f}_PBC'
 
             normalize_on_multi(Lx, Ly, Hmax - Hmin, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
@@ -145,7 +145,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at}-{at}_z-{Hmin}-{Hmax:.1f}'
+                output_file = f'RDF2D_{at}-{at}_z-{Hmin:.2f}-{Hmax:.2f}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
@@ -184,7 +184,7 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at1}-{at2}_z-{Hmin}-{Hmax:.1f}'
+                output_file = f'RDF2D_{at1}-{at2}_z-{Hmin:.2f}-{Hmax:.2f}'
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 

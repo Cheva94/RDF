@@ -49,7 +49,7 @@ def main():
 
     output_file = args.output_file
     if output_file == None:
-        output_file = f'PDF_{at}_z-{Hmin}-{Hmax:.1f}'
+        output_file = f'PDF_{at}_z-{Hmin:.2f}-{Hmax:.2f}'
 
     normalize_pdf(dxy, nBinX, nBinY, frames_count, PDF, output_file)
 
