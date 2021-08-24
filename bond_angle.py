@@ -26,48 +26,52 @@ def main():
     idAt = xyz['idAt'].drop_duplicates().to_numpy()
     xyz = xyz.to_numpy()
     nAt = xyz.shape[0]
-    At = array(xyz[:,0])
-
-    r1 = xyz[:, 1:]
-    r2 = xyz[:, 1:]
 
     dict = {}
+    At = xyz[:,0]
+    r = xyz[:, 1:]
     for i in range(nAt):
         for j in range(i+1, nAt):
-            d2 = r1[i] - r2[j]
-            d2 = inner(d2, d2)
-            if d2 <= 9:
-                dict.setdefault(f'{At[i]}-{At[j]}', []).append(sqrt(d2))
+            for k in range(j+1, nAt):
+                r12 = r[i] - r[j]
+                d12 = inner(r12, r12)
+                r23 = r[j] - r[k]
+                d23 = inner(r23, r23)
 
-    name = name.split('.xyz')[0].split('/')[-1]
-    for at1 in idAt:
-        for at2 in idAt:
-            if at1 == at2:
-                H = zeros(301, dtype=int)
-                for data in dict.get(f'{at1}-{at2}'):
-                    H[int(data/0.01)] += 1
+                if d12 <= 4 and d23 <=4:
+                    coseno = inner(r12, r23) / sqrt(d12 * d23)
+                    dict.setdefault(f'{At[i]}-{At[j]}-{At[k]}', []).append(coseno)
 
-                with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
-                    for binIdx in range(301):
-                        if H[binIdx] != 0:
-                            d = (binIdx + 0.5) * 0.01
-                            f.write(f'{d:.3f}, {H[binIdx]} \n')
-            elif at1 != at2:
-                if isfile(f'{name}-bond_length-{at2}-{at1}.csv'):
-                    continue
-                else:
-                    H = zeros(301, dtype=int)
-                    for data in dict.get(f'{at1}-{at2}'):
-                        H[int(data/0.01)] += 1
-
-                    for data in dict.get(f'{at2}-{at1}'):
-                        H[int(data/0.01)] += 1
-
-                    with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
-                        for binIdx in range(301):
-                            if H[binIdx] != 0:
-                                d = (binIdx + 0.5) * 0.01
-                                f.write(f'{d:.3f}, {H[binIdx]} \n')
+    print(dict.keys())
+    # name = name.split('.xyz')[0].split('/')[-1]
+    # for at1 in idAt:
+    #     for at2 in idAt:
+    #         if at1 == at2:
+    #             H = zeros(301, dtype=int)
+    #             for data in dict.get(f'{at1}-{at2}'):
+    #                 H[int(data/0.01)] += 1
+    #
+    #             with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
+    #                 for binIdx in range(301):
+    #                     if H[binIdx] != 0:
+    #                         d = (binIdx + 0.5) * 0.01
+    #                         f.write(f'{d:.3f}, {H[binIdx]} \n')
+    #         elif at1 != at2:
+    #             if isfile(f'{name}-bond_length-{at2}-{at1}.csv'):
+    #                 continue
+    #             else:
+    #                 H = zeros(301, dtype=int)
+    #                 for data in dict.get(f'{at1}-{at2}'):
+    #                     H[int(data/0.01)] += 1
+    #
+    #                 for data in dict.get(f'{at2}-{at1}'):
+    #                     H[int(data/0.01)] += 1
+    #
+    #                 with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
+    #                     for binIdx in range(301):
+    #                         if H[binIdx] != 0:
+    #                             d = (binIdx + 0.5) * 0.01
+    #                             f.write(f'{d:.3f}, {H[binIdx]} \n')
 
     print(f'Job done in {(time() - start):.3f} seconds!')
     print(f'Output files: {name}-bond_length-ATOMS.csv')

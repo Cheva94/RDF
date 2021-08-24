@@ -79,12 +79,11 @@ def sample_off_mono(xyz, dr, Rcut, RDF, nAt):
     '''
 
     Rcut2 = Rcut * Rcut
-    r1 = xyz[:, 1:]
-    r2 = xyz[:, 1:]
+    r = xyz[:, 1:]
 
     for i in range(nAt):
         for j in range(i+1, nAt):
-            d2 = r1[i] - r2[j]
+            d2 = r[i] - r[j]
             d2 = inner(d2, d2)
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
