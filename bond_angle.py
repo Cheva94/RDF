@@ -11,50 +11,53 @@
 import argparse
 from pandas import read_csv
 from time import time
-from numpy import sqrt, array, zeros, inner, pi, arccos
+from numpy import sqrt, array, zeros, inner, pi, arccos, mean, std
 
 def main():
     start = time()
 
     name = args.input_file
-    at2 = args.c_at
-    at1 = args.n_at[0]
-    at3 = args.n_at[1]
+    center = args.central_atom
+    neigh1 = args.neighboring_atom[0]
+    neigh2 = args.neighboring_atom[1]
     Rcut = args.Rcut
     Rcut2 = Rcut * Rcut
     convfact = 180 / pi
 
-    print(f'Running bond angle for {at2} surrounded by {at1} and {at3}.')
+    print(f'Running bond angle for {center} surrounded by {neigh1} and {neigh2}.')
 
     xyz = read_csv(name, header = None, delim_whitespace = True,
                     names=['idAt', 'rx', 'ry', 'rz'])
     xyz = xyz.iloc[1:,:].reset_index(drop=True)
 
-    if at1 == at2 == at3:
-        nAt = xyz.iloc[:,0].value_counts()[at1]
-        xyz = xyz[xyz['idAt'] == at1].to_numpy()
+    aux = []
+    angs = []
+    if neigh1 == neigh1 == center:
+        nAt = xyz.iloc[:,0].value_counts()[neigh1]
+        xyz = xyz[xyz['idAt'] == neigh1].to_numpy()
         r = xyz[:, 1:]
 
-        L = []
         for i in range(nAt):
             for j in range(i+1, nAt):
                 r2 = r[i] - r[j]
                 d2 = inner(r2, r2)
                 if d2 <= Rcut2:
-                    L.append((i,j,sqrt(d2), r2))
+                    aux.append((i,j,sqrt(d2), r2))
 
-        angs = []
-        for m in range(len(L)):
-            for n in range(m+1, len(L)):
-                if L[m][0] == L[n][0]:
-                    # print(f'match en el primer elemento: {L[m]} con {L[n]}')
-                    angulo = convfact * arccos(inner(L[m][3], L[n][3]) / (L[m][2] * L[n][2]))
+        L = len(aux)
+        for m in range(L):
+            for n in range(m+1, L):
+                if aux[m][0] == aux[n][0]:
+                    angulo = convfact * arccos(inner(aux[m][3], aux[n][3]) / (aux[m][2] * aux[n][2]))
                     angs.append(angulo)
-                elif L[m][1] == L[n][1]:
-                    angulo = convfact * arccos(inner(L[m][3], L[n][3]) / (L[m][2] * L[n][2]))
+                elif aux[m][1] == aux[n][1]:
+                    angulo = convfact * arccos(inner(aux[m][3], aux[n][3]) / (aux[m][2] * aux[n][2]))
                     angs.append(angulo)
 
-        print(angs)
+        A = array(angs)
+        print(f'Job done in {(time() - start):.3f} seconds!')
+
+        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.2f} degrees with a standard deviation of {std(A):.2f} degrees.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -64,9 +67,9 @@ if __name__ == "__main__":
     parser.add_argument('Rcut', type = float, help = "Maximum distance to be \
                         considered.")
 
-    parser.add_argument('c_at', help = "Central atom.")
+    parser.add_argument('central_atom')
 
-    parser.add_argument('n_at', nargs = 2, help = "Neighboring atom.")
+    parser.add_argument('neighboring_atom', nargs = 2)
 
     args = parser.parse_args()
 

@@ -64,7 +64,7 @@ def main():
 
         A = array(L)
         print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
+        print(f'The list of bond lengths between {at1} and {at2} is (in Angstrom): \n\t{L} \nThe average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
