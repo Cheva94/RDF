@@ -7,7 +7,7 @@
 '''
 
 from pandas import read_csv
-from numpy import zeros, sqrt, array, pi
+from numpy import zeros, sqrt, array, pi, inner
 
 ################################################################################
 ######################## Input processing functions
@@ -79,23 +79,12 @@ def sample_off_mono(xyz, dr, Rcut, RDF, nAt):
     '''
 
     Rcut2 = Rcut * Rcut
-
-    rx1 = array(xyz[:,1])
-    ry1 = array(xyz[:,2])
-    rz1 = array(xyz[:,3])
-
-    rx2 = array(xyz[:,1])
-    ry2 = array(xyz[:,2])
-    rz2 = array(xyz[:,3])
+    r = xyz[:, 1:]
 
     for i in range(nAt):
         for j in range(i+1, nAt):
-            dx = rx1[i] - rx2[j]
-            dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
-
-            d2 = dx**2 + dy**2 + dz**2
-
+            d2 = r[i] - r[j]
+            d2 = inner(d2, d2)
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
 
@@ -105,23 +94,13 @@ def sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     '''
 
     Rcut2 = Rcut * Rcut
-
-    rx1 = array(xyz1[:,1])
-    ry1 = array(xyz1[:,2])
-    rz1 = array(xyz1[:,3])
-
-    rx2 = array(xyz2[:,1])
-    ry2 = array(xyz2[:,2])
-    rz2 = array(xyz2[:,3])
+    r1 = xyz1[:, 1:]
+    r2 = xyz2[:, 1:]
 
     for i in range(nAt1):
         for j in range(nAt2):
-            dx = rx1[i] - rx2[j]
-            dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
-
-            d2 = dx**2 + dy**2 + dz**2
-
+            d2 = r1[i] - r2[j]
+            d2 = inner(d2, d2)
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
 
