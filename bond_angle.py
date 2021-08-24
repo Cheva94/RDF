@@ -31,8 +31,10 @@ def main():
     xyz = xyz.iloc[1:,:].reset_index(drop=True)
 
     aux = []
+    aux2 = []
     angs = []
-    if neigh1 == neigh1 == center:
+
+    if neigh1 == neigh2 == center:
         nAt = xyz.iloc[:,0].value_counts()[neigh1]
         xyz = xyz[xyz['idAt'] == neigh1].to_numpy()
         r = xyz[:, 1:]
@@ -47,17 +49,119 @@ def main():
         L = len(aux)
         for m in range(L):
             for n in range(m+1, L):
-                if aux[m][0] == aux[n][0]:
-                    angulo = convfact * arccos(inner(aux[m][3], aux[n][3]) / (aux[m][2] * aux[n][2]))
-                    angs.append(angulo)
-                elif aux[m][1] == aux[n][1]:
+                if aux[m][0] == aux[n][0] or aux[m][1] == aux[n][1]:
                     angulo = convfact * arccos(inner(aux[m][3], aux[n][3]) / (aux[m][2] * aux[n][2]))
                     angs.append(angulo)
 
         A = array(angs)
         print(f'Job done in {(time() - start):.3f} seconds!')
+        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
 
-        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.2f} degrees with a standard deviation of {std(A):.2f} degrees.')
+    if neigh1 == neigh2 != center:
+        nCenter = xyz.iloc[:,0].value_counts()[center]
+        nNeigh = xyz.iloc[:,0].value_counts()[neigh1]
+
+        xyzCenter = xyz[xyz['idAt'] == center].to_numpy()
+        xyzNeigh = xyz[xyz['idAt'] == neigh1].to_numpy()
+
+        rCenter = xyzCenter[:, 1:]
+        rNeigh = xyzNeigh[:, 1:]
+
+        for i in range(nCenter):
+            for j in range(nNeigh):
+                r2 = rNeigh[j] - rCenter[i]
+                d2 = inner(r2, r2)
+                if d2 <= Rcut2:
+                    aux.append((i,j,sqrt(d2), r2))
+
+        L = len(aux)
+        for m in range(L):
+            for n in range(m+1, L):
+                if aux[m][0] == aux[n][0]:
+                    angulo = convfact * arccos(inner(aux[m][3], aux[n][3]) / (aux[m][2] * aux[n][2]))
+                    angs.append(angulo)
+
+        A = array(angs)
+        print(f'Job done in {(time() - start):.3f} seconds!')
+        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
+
+    if neigh1 == center != neigh2:
+        nCenter = xyz.iloc[:,0].value_counts()[center]
+        nNeigh = xyz.iloc[:,0].value_counts()[neigh2]
+
+        xyzCenter = xyz[xyz['idAt'] == center].to_numpy()
+        xyzNeigh = xyz[xyz['idAt'] == neigh2].to_numpy()
+
+        rCenter = xyzCenter[:, 1:]
+        rNeigh = xyzNeigh[:, 1:]
+
+        for i in range(nCenter):
+            for j in range(nNeigh):
+                r2 = rNeigh[j] - rCenter[i]
+                d2 = inner(r2, r2)
+                if d2 <= Rcut2:
+                    aux.append((i,j,sqrt(d2), r2))
+
+        for i in range(nCenter):
+            for j in range(i+1, nCenter):
+                r2 = rCenter[j] - rCenter[i]
+                d2 = inner(r2, r2)
+                if d2 <= Rcut2:
+                    aux2.append((i,j,sqrt(d2), r2))
+
+        L = len(aux)
+        L2 = len(aux2)
+        for m in range(L):
+            for n in range(L2):
+                if aux[m][0] == aux2[n][0]:
+                    angulo = convfact * arccos(inner(aux[m][3], aux2[n][3]) / (aux[m][2] * aux2[n][2]))
+                    angs.append(angulo)
+                elif aux[m][0] == aux2[n][1]:
+                    angulo = convfact * arccos(inner(aux[m][3], -aux2[n][3]) / (aux[m][2] * aux2[n][2]))
+                    angs.append(angulo)
+
+        A = array(angs)
+        print(f'Job done in {(time() - start):.3f} seconds!')
+        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
+
+    if neigh2 == center != neigh1:
+        nCenter = xyz.iloc[:,0].value_counts()[center]
+        nNeigh = xyz.iloc[:,0].value_counts()[neigh1]
+
+        xyzCenter = xyz[xyz['idAt'] == center].to_numpy()
+        xyzNeigh = xyz[xyz['idAt'] == neigh1].to_numpy()
+
+        rCenter = xyzCenter[:, 1:]
+        rNeigh = xyzNeigh[:, 1:]
+
+        for i in range(nCenter):
+            for j in range(nNeigh):
+                r2 = rNeigh[j] - rCenter[i]
+                d2 = inner(r2, r2)
+                if d2 <= Rcut2:
+                    aux.append((i,j,sqrt(d2), r2))
+
+        for i in range(nCenter):
+            for j in range(i+1, nCenter):
+                r2 = rCenter[j] - rCenter[i]
+                d2 = inner(r2, r2)
+                if d2 <= Rcut2:
+                    aux2.append((i,j,sqrt(d2), r2))
+
+        L = len(aux)
+        L2 = len(aux2)
+        for m in range(L):
+            for n in range(L2):
+                if aux[m][0] == aux2[n][0]:
+                    angulo = convfact * arccos(inner(aux[m][3], aux2[n][3]) / (aux[m][2] * aux2[n][2]))
+                    angs.append(angulo)
+                elif aux[m][0] == aux2[n][1]:
+                    angulo = convfact * arccos(inner(aux[m][3], -aux2[n][3]) / (aux[m][2] * aux2[n][2]))
+                    angs.append(angulo)
+
+        A = array(angs)
+        print(f'Job done in {(time() - start):.3f} seconds!')
+        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
