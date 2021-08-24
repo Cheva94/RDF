@@ -11,7 +11,7 @@
 import argparse
 from pandas import read_csv
 from time import time
-from numpy import sqrt, array, zeros, inner
+from numpy import sqrt, array, zeros, inner, mean, std
 
 def main():
     start = time()
@@ -20,10 +20,6 @@ def main():
     at1 = args.atoms[0]
     at2 = args.atoms[1]
     Rcut = args.Rcut
-    increment = 0.01
-
-    nBin = int(Rcut/increment) + 1
-    H = zeros(nBin, dtype = int)
     Rcut2 = Rcut * Rcut
 
     print(f'Running bond length between {at1} and {at2}.')
@@ -32,6 +28,7 @@ def main():
                     names=['idAt', 'rx', 'ry', 'rz'])
     xyz = xyz.iloc[1:,:].reset_index(drop=True)
 
+    L = []
     if at1 != at2:
         nAt1 = xyz.iloc[:,0].value_counts()[at1]
         nAt2 = xyz.iloc[:,0].value_counts()[at2]
@@ -47,19 +44,11 @@ def main():
                 d2 = r1[i] - r2[j]
                 d2 = inner(d2, d2)
                 if d2 <= Rcut2:
-                    binIdx = int(sqrt(d2)/increment)
-                    H[binIdx] += 1
+                    L.append(sqrt(d2))
 
-        name = name.split('.xyz')[0].split('/')[-1]
-        name = f'{name}-bond_length-{at1}-{at2}.csv'
-        with open(name, 'w') as f:
-            for binIdx in range(nBin):
-                if H[binIdx] != 0:
-                    d = (binIdx + 0.5) * increment
-                    f.write(f'{d:.3f}, {H[binIdx]} \n')
-
+        A = array(L)
         print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'Output files: {name}')
+        print(f'The average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
 
     else:
         nAt = xyz.iloc[:,0].value_counts()[at1]
@@ -71,19 +60,11 @@ def main():
                 d2 = r[i] - r[j]
                 d2 = inner(d2, d2)
                 if d2 <= Rcut2:
-                    binIdx = int(sqrt(d2)/increment)
-                    H[binIdx] += 1
+                    L.append(sqrt(d2))
 
-        name = name.split('.xyz')[0].split('/')[-1]
-        name = f'{name}-bond_length-{at1}-{at1}.csv'
-        with open(name, 'w') as f:
-            for binIdx in range(nBin):
-                if H[binIdx] != 0:
-                    d = (binIdx + 0.5) * increment
-                    f.write(f'{d:.3f}, {H[binIdx]} \n')
-
+        A = array(L)
         print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'Output files: {name}')
+        print(f'The average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

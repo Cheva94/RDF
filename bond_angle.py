@@ -21,10 +21,6 @@ def main():
     at1 = args.n_at[0]
     at3 = args.n_at[1]
     Rcut = args.Rcut
-    increment = 0.1
-
-    nBin = int((190 - 80)/increment) + 1
-    H = zeros(nBin, dtype = int)
     Rcut2 = Rcut * Rcut
     convfact = 180 / pi
 
