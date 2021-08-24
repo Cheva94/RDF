@@ -11,7 +11,7 @@
 import argparse
 from pandas import read_csv
 from time import time
-from numpy import sqrt, array, zeros #, pi
+from numpy import sqrt, array, zeros, inner#, pi
 from os.path import isfile
 
 def main():
@@ -28,23 +28,14 @@ def main():
     nAt = xyz.shape[0]
     At = array(xyz[:,0])
 
-    rx1 = array(xyz[:,1])
-    ry1 = array(xyz[:,2])
-    rz1 = array(xyz[:,3])
-
-    rx2 = array(xyz[:,1])
-    ry2 = array(xyz[:,2])
-    rz2 = array(xyz[:,3])
+    r1 = xyz[:, 1:]
+    r2 = xyz[:, 1:]
 
     dict = {}
     for i in range(nAt):
         for j in range(i+1, nAt):
-            dx = rx1[i] - rx2[j]
-            dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
-
-            d2 = dx**2 + dy**2 + dz**2
-
+            d2 = r1[i] - r2[j]
+            d2 = inner(d2, d2)
             if d2 <= 9:
                 dict.setdefault(f'{At[i]}-{At[j]}', []).append(sqrt(d2))
 
