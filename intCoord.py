@@ -46,33 +46,45 @@ def main():
             if d2 <= 9:
                 dict.setdefault(f'{At[i]}-{At[j]}', []).append(sqrt(d2))
 
+
+    dict1 = {}
+    for at1 in idAt:
+        for at2 in idAt:
+            if at1 == at2:
+                dict1.setdefault(f'{at1}-{at2}', []).append(dict.get(f'{at1}-{at2}'))
+                dict1[f'{at1}-{at2}'] = dict1.get(f'{at1}-{at2}')[0]
+            if at1 != at2:
+                
+    print(dict1)
+    # pairs = list(dict.keys())
+
     # output_file = args.output_file
     # if output_file == None:
     # output_file = f"{name.split('.xyz')[0].split('/')[-1]}-bond_length"
 
-    name = name.split('.xyz')[0].split('/')[-1]
-    for at1 in idAt:
-        for at2 in idAt:
-            if at1 == at2:
-                H = zeros(301, dtype=int)
-                for data in dict.get(f'{at1}-{at2}'):
-                    H[int(data/0.01)] += 1
-
-                with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
-                    for binIdx in range(301):
-                        if H[binIdx] != 0:
-                            d = (binIdx + 0.5) * 0.01
-                            f.write(f'{d:.3f}, {H[binIdx]} \n')
-            elif at1 != at2:
-                H = zeros(301, dtype=int)
-                for data in dict.get(f'{at1}-{at2}'):
-                    H[int(data/0.01)] += 1
-
-                with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
-                    for binIdx in range(301):
-                        if H[binIdx] != 0:
-                            d = (binIdx + 0.5) * 0.01
-                            f.write(f'{d:.3f}, {H[binIdx]} \n')
+    # name = name.split('.xyz')[0].split('/')[-1]
+    # for at1 in idAt:
+    #     for at2 in idAt:
+            # if at1 == at2:
+            #     H = zeros(301, dtype=int)
+            #     for data in dict.get(f'{at1}-{at2}'):
+            #         H[int(data/0.01)] += 1
+            #
+            #     with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
+            #         for binIdx in range(301):
+            #             if H[binIdx] != 0:
+            #                 d = (binIdx + 0.5) * 0.01
+            #                 f.write(f'{d:.3f}, {H[binIdx]} \n')
+            # # elif at1 != at2:
+            #     H = zeros(301, dtype=int)
+            #     for data in dict.get(f'{at1}-{at2}'):
+            #         H[int(data/0.01)] += 1
+            #
+            #     with open(f'{name}-bond_length-{at1}-{at2}.csv', 'w') as f:
+            #         for binIdx in range(301):
+            #             if H[binIdx] != 0:
+            #                 d = (binIdx + 0.5) * 0.01
+            #                 f.write(f'{d:.3f}, {H[binIdx]} \n')
             #     dict_end.setdefault(f'{at1}-{at2}', []).append(dict.get(f'{at1}-{at2}'))
             #     dict_end.setdefault(f'{at1}-{at2}', []).append(dict.get(f'{at2}-{at1}'))
 
