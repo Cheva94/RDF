@@ -9,7 +9,7 @@
 '''
 
 import argparse
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 from time import time
 from numpy import sqrt, array, zeros #, pi
 
@@ -34,7 +34,7 @@ def main():
     ry2 = array(xyz[:,2])
     rz2 = array(xyz[:,3])
 
-    dict = {}
+    data = []
     for i in range(nAt):
         for j in range(i+1, nAt):
             dx = rx1[i] - rx2[j]
@@ -44,18 +44,23 @@ def main():
             d2 = dx**2 + dy**2 + dz**2
 
             if d2 <= 9:
-                dict.setdefault(f'{At[i]}-{At[j]}', []).append(sqrt(d2))
+                data.append((f'{At[i]}-{At[j]}', sqrt(d2)))
 
+    data = DataFrame(data)
 
-    dict1 = {}
-    for at1 in idAt:
-        for at2 in idAt:
-            if at1 == at2:
-                dict1.setdefault(f'{at1}-{at2}', []).append(dict.get(f'{at1}-{at2}'))
-                dict1[f'{at1}-{at2}'] = dict1.get(f'{at1}-{at2}')[0]
-            if at1 != at2:
-                
-    print(dict1)
+    
+    data = data[data[0] == 'H-H'].to_numpy()
+    print(data[:,1])
+
+    # dict1 = {}
+    # for at1 in idAt:
+    #     for at2 in idAt:
+    #         if at1 == at2:
+    #             dict1.setdefault(f'{at1}-{at2}', []).append(dict.get(f'{at1}-{at2}'))
+    #             dict1[f'{at1}-{at2}'] = dict1.get(f'{at1}-{at2}')[0]
+    #         if at1 != at2:
+    #
+    # print(dict1)
     # pairs = list(dict.keys())
 
     # output_file = args.output_file
@@ -101,7 +106,7 @@ if __name__ == "__main__":
     #
     # parser.add_argument('at', help = "Atom to be analyzed.")
     #
-    parser.add_argument('-bL', '--bond_length', action = 'store_true',
+    parser.add_argument('-bdata', '--bond_length', action = 'store_true',
                         help = "Calculates bond lengths.")
     #
     # parser.add_argument('-o', '--output_file', help = "Path to the output file. \
