@@ -1,9 +1,9 @@
 #!/usr/local/bin/python3.9
 
 '''
-    Calculation: Internal coordniates.
-    Description: Determines internal coordinates of a system when given a xyz
-                file: bond length, bond angle and . Everything is in Angstrom.
+    Calculation: bond angle.
+    Description: Determines the bond angle of a triple of atoms for a system when
+                given a xyz. Everything is in Angstrom.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: August, 2021.
 '''
@@ -11,38 +11,67 @@
 import argparse
 from pandas import read_csv
 from time import time
-from numpy import sqrt, array, zeros, inner#, pi
-from os.path import isfile
+from numpy import sqrt, array, zeros, inner, pi, arccos
 
 def main():
     start = time()
 
     name = args.input_file
-    print(f'Running internal coordinates for {name} file.')
+    at2 = args.c_at
+    at1 = args.n_at[0]
+    at3 = args.n_at[1]
+    Rcut = args.Rcut
+    increment = 0.1
+
+    nBin = int((190 - 80)/increment) + 1
+    H = zeros(nBin, dtype = int)
+    Rcut2 = Rcut * Rcut
+
+    print(f'Running bond angle for {at2} surrounded by {at1} and {at3}.')
 
     xyz = read_csv(name, header = None, delim_whitespace = True,
                     names=['idAt', 'rx', 'ry', 'rz'])
+    xyz = xyz.iloc[1:,:].reset_index(drop=True).to_numpy()
 
-    idAt = xyz['idAt'].drop_duplicates().to_numpy()
-    xyz = xyz.to_numpy()
+    # nAt1 = xyz.iloc[:,0].value_counts()[at1]
+    # nAt2 = xyz.iloc[:,0].value_counts()[at2]
+    # nAt3 = xyz.iloc[:,0].value_counts()[at3]
+    #
+    # xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
+    # xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
+    # xyz3 = xyz[xyz['idAt'] == at3].to_numpy()
+    #
+    # r1 = xyz1[:, 1:]
+    # r2 = xyz2[:, 1:]
+    # r3 = xyz3[:, 1:]
+
     nAt = xyz.shape[0]
-
-    dict = {}
     At = xyz[:,0]
     r = xyz[:, 1:]
+    dict = {}
     for i in range(nAt):
         for j in range(i+1, nAt):
             for k in range(j+1, nAt):
+                # if At[j] != at2:
+                #     continue
+                # elif At[i] == at1 and At[k] == at3:
+                #     0
+                # elif At[i] == at3 and At[k] == at3:
+
                 r12 = r[i] - r[j]
                 d12 = inner(r12, r12)
                 r23 = r[j] - r[k]
                 d23 = inner(r23, r23)
 
-                if d12 <= 4 and d23 <=4:
+                if d12 <= Rcut2 and d23 <= Rcut2:
                     coseno = inner(r12, r23) / sqrt(d12 * d23)
-                    dict.setdefault(f'{At[i]}-{At[j]}-{At[k]}', []).append(coseno)
+                    angulo = arccos(coseno) * 180 / pi
+                    # dict.setdefault(f'{At[i]}-{At[j]}-{At[k]}', []).append(coseno)
+                    dict.setdefault(f'{At[i]}-{At[j]}-{At[k]}', []).append(angulo)
 
-    print(dict.keys())
+    print(dict)
+#
+    # print(dict.keys())
     # name = name.split('.xyz')[0].split('/')[-1]
     # for at1 in idAt:
     #     for at2 in idAt:
@@ -81,20 +110,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('input_file', help = "Path to the xyz input file.")
-    #
-    # parser.add_argument('dh', type = float, help = "Increment to be considered.")
-    #
-    # parser.add_argument('at', help = "Atom to be analyzed.")
-    #
-    parser.add_argument('-bL', '--bond_length', action = 'store_true',
-                        help = "Calculates bond lengths.")
-    #
-    # parser.add_argument('-o', '--output_file', help = "Path to the output file. \
-    #                     If not given, the default name will be used.")
-    #
-    # parser.add_argument('-H', '--Hcut', type = float, nargs = 2, default = [0, -1],
-    #                     help = "Minimum and maximum heights to be considered.")
-    #
+
+    parser.add_argument('Rcut', type = float, help = "Maximum distance to be \
+                        considered.")
+
+    parser.add_argument('c_at', help = "Central atom.")
+
+    parser.add_argument('n_at', nargs = 2, help = "Neighboring atom.")
+
     args = parser.parse_args()
 
     main()

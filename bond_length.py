@@ -11,8 +11,7 @@
 import argparse
 from pandas import read_csv
 from time import time
-from numpy import sqrt, array, zeros, inner#, pi
-# from os.path import isfile
+from numpy import sqrt, array, zeros, inner
 
 def main():
     start = time()
@@ -23,14 +22,15 @@ def main():
     Rcut = args.Rcut
     increment = 0.01
 
-    print(f'Running bond length between {at1} and {at2}.')
-
     nBin = int(Rcut/increment) + 1
     H = zeros(nBin, dtype = int)
     Rcut2 = Rcut * Rcut
 
+    print(f'Running bond length between {at1} and {at2}.')
+
     xyz = read_csv(name, header = None, delim_whitespace = True,
                     names=['idAt', 'rx', 'ry', 'rz'])
+    xyz = xyz.iloc[1:,:].reset_index(drop=True)
 
     if at1 != at2:
         nAt1 = xyz.iloc[:,0].value_counts()[at1]
@@ -95,12 +95,6 @@ if __name__ == "__main__":
 
     parser.add_argument('atoms', nargs = 2, help = "Atoms to be analyzed.")
 
-    # parser.add_argument('-o', '--output_file', help = "Path to the output file. \
-    #                     If not given, the default name will be used.")
-    #
-    # parser.add_argument('-H', '--Hcut', type = float, nargs = 2, default = [0, -1],
-    #                     help = "Minimum and maximum heights to be considered.")
-    #
     args = parser.parse_args()
 
     main()
