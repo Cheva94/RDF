@@ -24,8 +24,6 @@ def main():
     Rcut2 = Rcut * Rcut
     convfact = 180 / pi
 
-    print(f'Running bond angle for {center} surrounded by {neigh1} and {neigh2}.')
-
     xyz = read_csv(name, header = None, delim_whitespace = True,
                     names=['idAt', 'rx', 'ry', 'rz'])
     xyz = xyz.iloc[1:,:].reset_index(drop=True)
@@ -53,11 +51,7 @@ def main():
                     angulo = convfact * arccos(inner(aux[m][3], aux[n][3]) / (aux[m][2] * aux[n][2]))
                     angs.append(angulo)
 
-        A = array(angs)
-        print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
-
-    elif neigh1 == neigh2:# != center:
+    elif neigh1 == neigh2:
         nCenter = xyz.iloc[:,0].value_counts()[center]
         nNeigh = xyz.iloc[:,0].value_counts()[neigh1]
 
@@ -81,11 +75,7 @@ def main():
                     angulo = convfact * arccos(inner(aux[m][3], aux[n][3]) / (aux[m][2] * aux[n][2]))
                     angs.append(angulo)
 
-        A = array(angs)
-        print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
-
-    elif neigh1 == center:# != neigh2:
+    elif neigh1 == center:
         nCenter = xyz.iloc[:,0].value_counts()[center]
         nNeigh = xyz.iloc[:,0].value_counts()[neigh2]
 
@@ -120,11 +110,7 @@ def main():
                     angulo = convfact * arccos(inner(aux[m][3], -aux2[n][3]) / (aux[m][2] * aux2[n][2]))
                     angs.append(angulo)
 
-        A = array(angs)
-        print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
-
-    elif neigh2 == center:# != neigh1:
+    elif neigh2 == center:
         nCenter = xyz.iloc[:,0].value_counts()[center]
         nNeigh = xyz.iloc[:,0].value_counts()[neigh1]
 
@@ -159,11 +145,7 @@ def main():
                     angulo = convfact * arccos(inner(aux[m][3], -aux2[n][3]) / (aux[m][2] * aux2[n][2]))
                     angs.append(angulo)
 
-        A = array(angs)
-        print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
-
-    else: # neigh2 != center != neigh1:
+    else:
         nCenter = xyz.iloc[:,0].value_counts()[center]
         nNeigh1 = xyz.iloc[:,0].value_counts()[neigh1]
         nNeigh2 = xyz.iloc[:,0].value_counts()[neigh2]
@@ -197,10 +179,13 @@ def main():
                 if aux[m][0] == aux2[n][0]:
                     angulo = convfact * arccos(inner(aux[m][3], aux2[n][3]) / (aux[m][2] * aux2[n][2]))
                     angs.append(angulo)
-                
-        A = array(angs)
+
+    A = array(angs)
+    if args.verbose:
         print(f'Job done in {(time() - start):.3f} seconds!')
         print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
+    else:
+        print(f'{neigh1}-{center}-{neigh2} = ({mean(A):.1f} +- {std(A):.1f})°')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -213,6 +198,8 @@ if __name__ == "__main__":
     parser.add_argument('central_atom')
 
     parser.add_argument('neighboring_atom', nargs = 2)
+
+    parser.add_argument('-V', '--verbose', action = 'store_true', help = "Extensive printing.")
 
     args = parser.parse_args()
 
