@@ -56,10 +56,14 @@ def main():
                 if d2 <= Rcut2:
                     L.append(sqrt(d2))
 
+    L.sort()
     A = array(L)
     if args.verbose:
         print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond lengths between {at1} and {at2} is (in Angstrom): \n\t{L} \nThe average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
+        print(f'The list of bond lengths (in Angstrom) between {at1} and {at2} is ({len(L)} elements):')
+        for i in range(len(L)):
+            print(f'{L[i]:.2f}')
+        print(f'The average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
     else:
         print(f'{at1}-{at2} = ({mean(A):.4f} +- {std(A):.4f}) A')
 

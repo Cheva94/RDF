@@ -180,10 +180,14 @@ def main():
                     angulo = convfact * arccos(inner(aux[m][3], aux2[n][3]) / (aux[m][2] * aux2[n][2]))
                     angs.append(angulo)
 
+    angs.sort()
     A = array(angs)
     if args.verbose:
         print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond angles for {neigh1}-{center}-{neigh2} is (in degrees): \n\t{angs} \nThe average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
+        print(f'The list of bond angles (in degrees) for {neigh1}-{center}-{neigh2} is ({len(angs)} elements):')
+        for i in range(len(angs)):
+            print(f'{angs[i]:.1f}')
+        print(f'The average bond angle for {neigh1}-{center}-{neigh2} is {mean(A):.1f} degrees with a standard deviation of {std(A):.1f} degrees.')
     else:
         print(f'{neigh1}-{center}-{neigh2} = ({mean(A):.1f} +- {std(A):.1f})°')
 
