@@ -22,8 +22,6 @@ def main():
     Rcut = args.Rcut
     Rcut2 = Rcut * Rcut
 
-    print(f'Running bond length between {at1} and {at2}.')
-
     xyz = read_csv(name, header = None, delim_whitespace = True,
                     names=['idAt', 'rx', 'ry', 'rz'])
     xyz = xyz.iloc[1:,:].reset_index(drop=True)
@@ -46,10 +44,6 @@ def main():
                 if d2 <= Rcut2:
                     L.append(sqrt(d2))
 
-        A = array(L)
-        print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
-
     else:
         nAt = xyz.iloc[:,0].value_counts()[at1]
         xyz = xyz[xyz['idAt'] == at1].to_numpy()
@@ -62,9 +56,16 @@ def main():
                 if d2 <= Rcut2:
                     L.append(sqrt(d2))
 
-        A = array(L)
+    L.sort()
+    A = array(L)
+    if args.verbose:
         print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond lengths between {at1} and {at2} is (in Angstrom): \n\t{L} \nThe average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
+        print(f'The list of bond lengths (in Angstrom) between {at1} and {at2} is ({len(L)} elements):')
+        for i in range(len(L)):
+            print(f'{L[i]:.2f}')
+        print(f'The average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
+    else:
+        print(f'{at1}-{at2} = ({mean(A):.4f} +- {std(A):.4f}) A')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -75,6 +76,8 @@ if __name__ == "__main__":
                         considered.")
 
     parser.add_argument('atoms', nargs = 2, help = "Atoms to be analyzed.")
+
+    parser.add_argument('-V', '--verbose', action = 'store_true', help = "Extensive printing.")
 
     args = parser.parse_args()
 
