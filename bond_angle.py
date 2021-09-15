@@ -13,6 +13,13 @@ from pandas import read_csv
 from time import time
 from numpy import sqrt, inner, pi, arccos, mean, std
 
+def PBC(dist, length):
+    '''
+    Correct a distance using Periodic Boundary Conditions (PBC).
+    '''
+
+    return dist - length * int(2*dist/length)
+
 def main():
     start = time()
 
@@ -23,10 +30,15 @@ def main():
     Rcut = args.Rcut
     Rcut2 = Rcut * Rcut
     convfact = 180 / pi
+    Rmin = args.Rmin
+    if Rmin == None:
+        Rmin = 0
+    Rmin2 = Rmin * Rmin
 
-    xyz = read_csv(name, header = None, delim_whitespace = True,
-                    names=['idAt', 'rx', 'ry', 'rz'])
-    xyz = xyz.iloc[1:,:].reset_index(drop=True)
+    xsf = read_csv(name, header = None, delim_whitespace = True,
+                    names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
+    Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
+    xyz = xsf.iloc[6:,0:4].reset_index(drop=True)
 
     BA = []
     ID = []
@@ -36,14 +48,24 @@ def main():
     if neigh1 == neigh2 == center:
         nAt = xyz.iloc[:,0].value_counts()[center]
         xyz = xyz[xyz['idAt'] == center]
-        r = xyz.iloc[:, 1:]
+        rx = xyz.iloc[:, 1]
+        ry = xyz.iloc[:, 2]
+        rz = xyz.iloc[:, 3]
 
         for i in range(nAt):
             for j in range(i+1, nAt):
-                r2 = r.iloc[i] - r.iloc[j]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux1.append((r.index[i],r.index[j],sqrt(d2), r2))
+                dx = rx.iloc[i] - rx.iloc[j]
+                dy = ry.iloc[i] - ry.iloc[j]
+                dz = rz.iloc[i] - rz.iloc[j]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux1.append((rx.index[i],rx.index[j],sqrt(d2), r2))
 
         L = len(aux1)
         for m in range(L):
@@ -64,15 +86,28 @@ def main():
         xyzCenter = xyz[xyz['idAt'] == center]
         xyzNeigh = xyz[xyz['idAt'] == neigh1]
 
-        rCenter = xyzCenter.iloc[:, 1:]
-        rNeigh = xyzNeigh.iloc[:, 1:]
+        rxCenter = xyzCenter.iloc[:, 1]
+        ryCenter = xyzCenter.iloc[:, 2]
+        rzCenter = xyzCenter.iloc[:, 3]
+
+        rxNeigh = xyzNeigh.iloc[:, 1]
+        ryNeigh = xyzNeigh.iloc[:, 2]
+        rzNeigh = xyzNeigh.iloc[:, 3]
 
         for i in range(nCenter):
             for j in range(nNeigh):
-                r2 = rNeigh.iloc[j] - rCenter.iloc[i]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux1.append((rCenter.index[i],rNeigh.index[j],sqrt(d2), r2))
+                dx = rxNeigh.iloc[j] - rxCenter.iloc[i]
+                dy = ryNeigh.iloc[j] - ryCenter.iloc[i]
+                dz = rzNeigh.iloc[j] - rzCenter.iloc[i]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux1.append((rxCenter.index[i],rxNeigh.index[j],sqrt(d2), r2))
 
         L = len(aux1)
         for m in range(L):
@@ -89,22 +124,43 @@ def main():
         xyzCenter = xyz[xyz['idAt'] == center]
         xyzNeigh = xyz[xyz['idAt'] == neigh2]
 
-        rCenter = xyzCenter.iloc[:, 1:]
-        rNeigh = xyzNeigh.iloc[:, 1:]
+        rxCenter = xyzCenter.iloc[:, 1]
+        ryCenter = xyzCenter.iloc[:, 2]
+        rzCenter = xyzCenter.iloc[:, 3]
+
+        rxNeigh = xyzNeigh.iloc[:, 1]
+        ryNeigh = xyzNeigh.iloc[:, 2]
+        rzNeigh = xyzNeigh.iloc[:, 3]
 
         for i in range(nCenter):
             for j in range(nNeigh):
-                r2 = rNeigh.iloc[j] - rCenter.iloc[i]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux1.append((rCenter.index[i],rNeigh.index[j],sqrt(d2), r2))
+                dx = rxNeigh.iloc[j] - rxCenter.iloc[i]
+                dy = ryNeigh.iloc[j] - ryCenter.iloc[i]
+                dz = rzNeigh.iloc[j] - rzCenter.iloc[i]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux1.append((rxCenter.index[i],rxNeigh.index[j],sqrt(d2), r2))
 
         for i in range(nCenter):
             for j in range(i+1, nCenter):
-                r2 = rCenter.iloc[j] - rCenter.iloc[i]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux2.append((rCenter.index[i],rCenter.index[j],sqrt(d2), r2))
+                dx = rxCenter.iloc[j] - rxCenter.iloc[i]
+                dy = ryCenter.iloc[j] - ryCenter.iloc[i]
+                dz = rzCenter.iloc[j] - rzCenter.iloc[i]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux2.append((rxCenter.index[i],rxCenter.index[j],sqrt(d2), r2))
 
         L1 = len(aux1)
         L2 = len(aux2)
@@ -126,22 +182,43 @@ def main():
         xyzCenter = xyz[xyz['idAt'] == center]
         xyzNeigh = xyz[xyz['idAt'] == neigh1]
 
-        rCenter = xyzCenter.iloc[:, 1:]
-        rNeigh = xyzNeigh.iloc[:, 1:]
+        rxCenter = xyzCenter.iloc[:, 1]
+        ryCenter = xyzCenter.iloc[:, 2]
+        rzCenter = xyzCenter.iloc[:, 3]
+
+        rxNeigh = xyzNeigh.iloc[:, 1]
+        ryNeigh = xyzNeigh.iloc[:, 2]
+        rzNeigh = xyzNeigh.iloc[:, 3]
 
         for i in range(nCenter):
             for j in range(nNeigh):
-                r2 = rNeigh.iloc[j] - rCenter.iloc[i]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux1.append((rCenter.index[i],rNeigh.index[j],sqrt(d2), r2))
+                dx = rxNeigh.iloc[j] - rxCenter.iloc[i]
+                dy = ryNeigh.iloc[j] - ryCenter.iloc[i]
+                dz = rzNeigh.iloc[j] - rzCenter.iloc[i]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux1.append((rxCenter.index[i],rxNeigh.index[j],sqrt(d2), r2))
 
         for i in range(nCenter):
             for j in range(i+1, nCenter):
-                r2 = rCenter.iloc[j] - rCenter.iloc[i]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux2.append((rCenter.index[i],rCenter.index[j],sqrt(d2), r2))
+                dx = rxCenter.iloc[j] - rxCenter.iloc[i]
+                dy = ryCenter.iloc[j] - ryCenter.iloc[i]
+                dz = rzCenter.iloc[j] - rzCenter.iloc[i]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux2.append((rxCenter.index[i],rxCenter.index[j],sqrt(d2), r2))
 
         L1 = len(aux1)
         L2 = len(aux2)
@@ -165,23 +242,47 @@ def main():
         xyzNeigh1 = xyz[xyz['idAt'] == neigh1]
         xyzNeigh2 = xyz[xyz['idAt'] == neigh2]
 
-        rCenter = xyzCenter.iloc[:, 1:]
-        rNeigh1 = xyzNeigh1.iloc[:, 1:]
-        rNeigh2 = xyzNeigh2.iloc[:, 1:]
+        rxCenter = xyzCenter.iloc[:, 1]
+        ryCenter = xyzCenter.iloc[:, 2]
+        rzCenter = xyzCenter.iloc[:, 3]
+
+        rxNeigh1 = xyzNeigh1.iloc[:, 1]
+        ryNeigh1 = xyzNeigh1.iloc[:, 2]
+        rzNeigh1 = xyzNeigh1.iloc[:, 3]
+
+        rxNeigh2 = xyzNeigh2.iloc[:, 1]
+        ryNeigh2 = xyzNeigh2.iloc[:, 2]
+        rzNeigh2 = xyzNeigh2.iloc[:, 3]
 
         for i in range(nCenter):
             for j in range(nNeigh1):
-                r2 = rNeigh1.iloc[j] - rCenter.iloc[i]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux1.append((rCenter.index[i],rNeigh1.index[j],sqrt(d2), r2))
+                dx = rxNeigh1.iloc[j] - rxCenter.iloc[i]
+                dy = ryNeigh1.iloc[j] - ryCenter.iloc[i]
+                dz = rzNeigh1.iloc[j] - rzCenter.iloc[i]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux1.append((rxCenter.index[i],rxNeigh1.index[j],sqrt(d2), r2))
 
         for i in range(nCenter):
             for j in range(nNeigh2):
-                r2 = rNeigh2.iloc[j] - rCenter.iloc[i]
-                d2 = inner(r2, r2)
-                if d2 <= Rcut2:
-                    aux2.append((rCenter.index[i],rNeigh2.index[j],sqrt(d2), r2))
+                dx = rxNeigh2.iloc[j] - rxCenter.iloc[i]
+                dy = ryNeigh2.iloc[j] - ryCenter.iloc[i]
+                dz = rzNeigh2.iloc[j] - rzCenter.iloc[i]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+                r2 = [dx, dy, dz]
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    aux2.append((rxCenter.index[i],rxNeigh2.index[j],sqrt(d2), r2))
 
         L1 = len(aux1)
         L2 = len(aux2)
@@ -217,6 +318,9 @@ if __name__ == "__main__":
     parser.add_argument('central_atom')
 
     parser.add_argument('neighboring_atom', nargs = 2)
+
+    parser.add_argument('--Rmin', type = float,
+                        help = "Minimum distance to be considered as bond length.")
 
     args = parser.parse_args()
 
