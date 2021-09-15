@@ -3,7 +3,7 @@
 '''
     Calculation: bond length.
     Description: Determines the bond length of a pair of atoms for a system when
-                given a xyz. Everything is in Angstrom.
+                given a xsf. Everything is in Angstrom. It takes into account PBC.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: August, 2021.
 '''
@@ -12,6 +12,13 @@ import argparse
 from pandas import read_csv
 from time import time
 from numpy import sqrt, inner, mean, std
+
+def PBC(dist, length):
+    '''
+    Correct a distance using Periodic Boundary Conditions (PBC).
+    '''
+
+    return dist - length * int(2*dist/length)
 
 def main():
     start = time()
@@ -22,9 +29,15 @@ def main():
     Rcut = args.Rcut
     Rcut2 = Rcut * Rcut
 
-    xyz = read_csv(name, header = None, delim_whitespace = True,
-                    names=['idAt', 'rx', 'ry', 'rz'])
-    xyz = xyz.iloc[1:,:].reset_index(drop=True)
+    Rmin = args.Rmin
+    if Rmin == None:
+        Rmin = 0
+    Rmin2 = Rmin * Rmin
+
+    xsf = read_csv(name, header = None, delim_whitespace = True,
+                    names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
+    Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
+    xyz = xsf.iloc[6:,0:4].reset_index(drop=True)
 
     ID = []
     BL = []
@@ -35,29 +48,50 @@ def main():
         xyz1 = xyz[xyz['idAt'] == at1]
         xyz2 = xyz[xyz['idAt'] == at2]
 
-        r1 = xyz1.iloc[:, 1:]
-        r2 = xyz2.iloc[:, 1:]
+        rx1 = xyz1.iloc[:, 1]
+        ry1 = xyz1.iloc[:, 2]
+        rz1 = xyz1.iloc[:, 3]
+
+        rx2 = xyz2.iloc[:, 1]
+        ry2 = xyz2.iloc[:, 2]
+        rz2 = xyz2.iloc[:, 3]
 
         for i in range(nAt1):
             for j in range(nAt2):
-                d2 = r1.iloc[i] - r2.iloc[j]
-                d2 = inner(d2, d2)
-                if d2 <= Rcut2:
-                    ID.append(f'{r1.index[i]} - {r2.index[j]}')
+                dx = rx1.iloc[i] - rx2.iloc[j]
+                dy = ry1.iloc[i] - ry2.iloc[j]
+                dz = rz1.iloc[i] - rz2.iloc[j]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    ID.append(f'{rx1.index[i]} - {rx2.index[j]}')
                     BL.append(sqrt(d2))
 
     else:
         nAt = xyz.iloc[:,0].value_counts()[at1]
         xyz = xyz[xyz['idAt'] == at1]
         id = xyz.iloc[:, 0]
-        r = xyz.iloc[:, 1:]
+        rx = xyz.iloc[:, 1]
+        ry = xyz.iloc[:, 2]
+        rz = xyz.iloc[:, 3]
 
         for i in range(nAt):
             for j in range(i+1, nAt):
-                d2 = r.iloc[i] - r.iloc[j]
-                d2 = inner(d2, d2)
-                if d2 <= Rcut2:
-                    ID.append(f'{r.index[i]} - {r.index[j]}')
+                dx = rx.iloc[i] - rx.iloc[j]
+                dy = ry.iloc[i] - ry.iloc[j]
+                dz = rz.iloc[i] - rz.iloc[j]
+
+                dx = PBC(dx, Lx)
+                dy = PBC(dy, Ly)
+                dz = PBC(dz, Lz)
+
+                d2 = dx**2 + dy**2 + dz**2
+                if ((d2>= Rmin2) and (d2<= Rcut2)):
+                    ID.append(f'{rx.index[i]} - {rx.index[j]}')
                     BL.append(sqrt(d2))
 
     Summary = f'Summary >> {at1}-{at2} = ({mean(BL):.4f} +- {std(BL):.4f}) A ; Count = {len(BL)} <<'
@@ -82,6 +116,9 @@ if __name__ == "__main__":
                         considered as bond length.")
 
     parser.add_argument('atoms', nargs = 2, help = "Atoms to be analyzed.")
+
+    parser.add_argument('--Rmin', type = float,
+                        help = "Minimum distance to be considered as bond length.")
 
     args = parser.parse_args()
 
