@@ -197,7 +197,7 @@ if __name__ == "__main__":
     parser.add_argument('input_file', help = "Path to the xyz input file.")
 
     parser.add_argument('Rcut', type = float, help = "Maximum distance to be \
-                        considered.")
+                        considered as bond length.")
 
     parser.add_argument('central_atom')
 
