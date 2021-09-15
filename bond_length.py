@@ -32,34 +32,32 @@ def main():
         nAt1 = xyz.iloc[:,0].value_counts()[at1]
         nAt2 = xyz.iloc[:,0].value_counts()[at2]
 
-        xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
-        xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
+        xyz1 = xyz[xyz['idAt'] == at1]
+        xyz2 = xyz[xyz['idAt'] == at2]
 
-        id1 = xyz1[:, 0]
-        r1 = xyz1[:, 1:]
-        id2 = xyz2[:, 0]
-        r2 = xyz2[:, 1:]
+        r1 = xyz1.iloc[:, 1:]
+        r2 = xyz2.iloc[:, 1:]
 
         for i in range(nAt1):
             for j in range(nAt2):
-                d2 = r1[i] - r2[j]
+                d2 = r1.iloc[i] - r2.iloc[j]
                 d2 = inner(d2, d2)
                 if d2 <= Rcut2:
-                    ID.append(f'{i} - {j}')
+                    ID.append(f'{r1.index[i]} - {r2.index[j]}')
                     BL.append(sqrt(d2))
 
     else:
         nAt = xyz.iloc[:,0].value_counts()[at1]
-        xyz = xyz[xyz['idAt'] == at1].to_numpy()
-        id = xyz[:, 0]
-        r = xyz[:, 1:]
+        xyz = xyz[xyz['idAt'] == at1]
+        id = xyz.iloc[:, 0]
+        r = xyz.iloc[:, 1:]
 
         for i in range(nAt):
             for j in range(i+1, nAt):
-                d2 = r[i] - r[j]
+                d2 = r.iloc[i] - r.iloc[j]
                 d2 = inner(d2, d2)
                 if d2 <= Rcut2:
-                    ID.append(f'{i} - {j}')
+                    ID.append(f'{r.index[i]} - {r.index[j]}')
                     BL.append(sqrt(d2))
 
     Summary = f'Summary >> {at1}-{at2} = ({mean(BL):.4f} +- {std(BL):.4f}) A ; Count = {len(BL)} <<'
@@ -69,7 +67,6 @@ def main():
         f.write('Atoms ID, Distance \n')
         for i in range(len(BL)):
             f.write(f'{ID[i]}, {BL[i]:.4f} \n')
-        # f.write(f'\n Summary: {at1}-{at2} = ({mean(BL):.4f} +- {std(BL):.4f}) A ; Count = {len(BL)}')
         f.write(f'\n {Summary}')
 
     print(f'Job done in {(time() - start):.3f} seconds!')
