@@ -28,7 +28,6 @@ def main():
     at2 = args.atoms[1]
     Rcut = args.Rcut
     Rcut2 = Rcut * Rcut
-
     Rmin = args.Rmin
     if Rmin == None:
         Rmin = 0
