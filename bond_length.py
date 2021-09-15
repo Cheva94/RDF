@@ -11,7 +11,7 @@
 import argparse
 from pandas import read_csv
 from time import time
-from numpy import sqrt, array, zeros, inner, mean, std
+from numpy import sqrt, inner, mean, std
 
 def main():
     start = time()
@@ -26,46 +26,52 @@ def main():
                     names=['idAt', 'rx', 'ry', 'rz'])
     xyz = xyz.iloc[1:,:].reset_index(drop=True)
 
-    L = []
+    ID = []
+    BL = []
     if at1 != at2:
         nAt1 = xyz.iloc[:,0].value_counts()[at1]
         nAt2 = xyz.iloc[:,0].value_counts()[at2]
 
-        xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
-        xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
+        xyz1 = xyz[xyz['idAt'] == at1]
+        xyz2 = xyz[xyz['idAt'] == at2]
 
-        r1 = xyz1[:, 1:]
-        r2 = xyz2[:, 1:]
+        r1 = xyz1.iloc[:, 1:]
+        r2 = xyz2.iloc[:, 1:]
 
         for i in range(nAt1):
             for j in range(nAt2):
-                d2 = r1[i] - r2[j]
+                d2 = r1.iloc[i] - r2.iloc[j]
                 d2 = inner(d2, d2)
                 if d2 <= Rcut2:
-                    L.append(sqrt(d2))
+                    ID.append(f'{r1.index[i]} - {r2.index[j]}')
+                    BL.append(sqrt(d2))
 
     else:
         nAt = xyz.iloc[:,0].value_counts()[at1]
-        xyz = xyz[xyz['idAt'] == at1].to_numpy()
-        r = xyz[:, 1:]
+        xyz = xyz[xyz['idAt'] == at1]
+        id = xyz.iloc[:, 0]
+        r = xyz.iloc[:, 1:]
 
         for i in range(nAt):
             for j in range(i+1, nAt):
-                d2 = r[i] - r[j]
+                d2 = r.iloc[i] - r.iloc[j]
                 d2 = inner(d2, d2)
                 if d2 <= Rcut2:
-                    L.append(sqrt(d2))
+                    ID.append(f'{r.index[i]} - {r.index[j]}')
+                    BL.append(sqrt(d2))
 
-    L.sort()
-    A = array(L)
-    if args.verbose:
-        print(f'Job done in {(time() - start):.3f} seconds!')
-        print(f'The list of bond lengths (in Angstrom) between {at1} and {at2} is ({len(L)} elements):')
-        for i in range(len(L)):
-            print(f'{L[i]:.2f}')
-        print(f'The average bond length between {at1} and {at2} is {mean(A):.4f} Angstrom with a standard deviation of {std(A):.4f} Angstrom.')
-    else:
-        print(f'{at1}-{at2} = ({mean(A):.4f} +- {std(A):.4f}) A')
+    Summary = f'Summary >> {at1}-{at2} = ({mean(BL):.4f} +- {std(BL):.4f}) A ; Count = {len(BL)} <<'
+
+    with open(f'{at1}-{at2}.csv', 'w') as f:
+        f.write('==== Bond Length in Angstroms ==== \n\n')
+        f.write('Atoms ID, Distance \n')
+        for i in range(len(BL)):
+            f.write(f'{ID[i]}, {BL[i]:.4f} \n')
+        f.write(f'\n {Summary}')
+
+    print(f'Job done in {(time() - start):.3f} seconds!')
+    print(f'Output file: {at1}-{at2}.csv')
+    print(f'{Summary}')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -73,11 +79,9 @@ if __name__ == "__main__":
     parser.add_argument('input_file', help = "Path to the xyz input file.")
 
     parser.add_argument('Rcut', type = float, help = "Maximum distance to be \
-                        considered.")
+                        considered as bond length.")
 
     parser.add_argument('atoms', nargs = 2, help = "Atoms to be analyzed.")
-
-    parser.add_argument('-V', '--verbose', action = 'store_true', help = "Extensive printing.")
 
     args = parser.parse_args()
 
