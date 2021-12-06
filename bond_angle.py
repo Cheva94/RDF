@@ -295,7 +295,7 @@ def main():
 
     Summary = f'Summary >> {neigh1}-{center}-{neigh2} = ({mean(BA):.1f} +- {std(BA):.1f})° ; Count = {len(BA)} <<'
 
-    with open(f'{neigh1}-{center}-{neigh2}.csv', 'w') as f:
+    with open(f'BA_{neigh1}-{center}-{neigh2}.csv', 'w') as f:
         f.write('==== Bond Agnle in degrees ==== \n\n')
         f.write('Atoms ID, Angle \n')
         for i in range(len(BA)):

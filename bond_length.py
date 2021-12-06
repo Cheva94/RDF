@@ -5,7 +5,7 @@
     Description: Determines the bond length of a pair of atoms for a system when
                 given a xsf. Everything is in Angstrom. It takes into account PBC.
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: August, 2021.
+    Dated: October, 2021.
 '''
 
 import argparse
@@ -39,6 +39,7 @@ def main():
     xyz = xsf.iloc[6:,0:4].reset_index(drop=True)
 
     ID = []
+    POS = []
     BL = []
     if at1 != at2:
         nAt1 = xyz.iloc[:,0].value_counts()[at1]
@@ -68,6 +69,7 @@ def main():
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
                     ID.append(f'{rx1.index[i]} - {rx2.index[j]}')
+                    POS.append(f'({rx1.iloc[i]}; {ry1.iloc[i]}; {rz1.iloc[i]}) - ({rx2.iloc[j]}; {ry2.iloc[j]}; {rz2.iloc[j]})')
                     BL.append(sqrt(d2))
 
     else:
@@ -91,15 +93,16 @@ def main():
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
                     ID.append(f'{rx.index[i]} - {rx.index[j]}')
+                    POS.append(f'({rx.iloc[i]}; {ry.iloc[i]}; {rz.iloc[i]}) - ({rx.iloc[j]}; {ry.iloc[j]}; {rz.iloc[j]})')
                     BL.append(sqrt(d2))
 
     Summary = f'Summary >> {at1}-{at2} = ({mean(BL):.4f} +- {std(BL):.4f}) A ; Count = {len(BL)} <<'
 
-    with open(f'{at1}-{at2}.csv', 'w') as f:
+    with open(f'BL_{at1}-{at2}.csv', 'w') as f:
         f.write('==== Bond Length in Angstroms ==== \n\n')
-        f.write('Atoms ID, Distance \n')
+        f.write('Atoms ID, Atoms Position, Distance \n')
         for i in range(len(BL)):
-            f.write(f'{ID[i]}, {BL[i]:.4f} \n')
+            f.write(f'{ID[i]}, {POS[i]}, {BL[i]:.4f} \n')
         f.write(f'\n {Summary}')
 
     print(f'Job done in {(time() - start):.3f} seconds!')

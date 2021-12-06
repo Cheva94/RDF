@@ -41,9 +41,9 @@ def main():
     for frame in range(frames_total):
         xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :].to_numpy()
         at = array(xyz[:,0])
-        rx = array(xyz[:,1])
-        ry = array(xyz[:,2])
-        rz = array(xyz[:,3])
+        rx = array(xyz[:,1]).astype(float)
+        ry = array(xyz[:,2]).astype(float)
+        rz = array(xyz[:,3]).astype(float)
 
         for i in range(nAtTot):
 
