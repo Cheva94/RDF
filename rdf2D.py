@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.9
+#!/usr/bin/python3.9
 
 '''
     Calculation: 2D Radial Distribution Function (RDF).

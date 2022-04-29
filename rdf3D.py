@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.9
+#!/usr/bin/python3.9
 
 '''
     Calculation: 3D Radial Distribution Function (RDF).
@@ -12,10 +12,11 @@
 
 import argparse
 from core.core3D import *
-from time import time
+from time import time, strftime
 
 def main():
     start = time()
+    started = strftime("%H:%M:%S")
 
     Rcut = args.Rcut
     dr = args.dr
@@ -27,7 +28,7 @@ def main():
     if args.periodic_boundary_conditions:
         if args.monocomponent:
             at = args.monocomponent
-            print(f'Running 3D RDF between {at} atoms with PBC.')
+            print(f'Running 3D RDF between {at} atoms with PBC. Started: {started}.')
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
@@ -58,13 +59,13 @@ def main():
             normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.3f} minutes!')
             print(f'Output file: {output_file}.csv')
 
         elif args.multicomponents:
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
-            print(f'Running 3D RDF between {at1} and {at2} atoms with PBC.')
+            print(f'Running 3D RDF between {at1} and {at2} atoms with PBC. Started: {started}.')
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = userfile_multi(args.input_file, at1, at2)
 
@@ -96,7 +97,7 @@ def main():
             normalize_on_multi(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.3f} minutes!')
             print(f'Output file: {output_file}.csv')
 
         else:
@@ -105,7 +106,7 @@ def main():
     else:
         if args.monocomponent:
             at = args.monocomponent
-            print(f'Running 3D RDF between {at} atoms without PBC.')
+            print(f'Running 3D RDF between {at} atoms without PBC. Started: {started}.')
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
@@ -129,13 +130,13 @@ def main():
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.3f} minutes!')
             print(f'Output file: {output_file}.csv')
 
         elif args.multicomponents:
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
-            print(f'Running 3D RDF between {at1} and {at2} atoms without PBC.')
+            print(f'Running 3D RDF between {at1} and {at2} atoms without PBC. Started: {started}.')
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = userfile_multi(args.input_file, at1, at2)
 
@@ -160,7 +161,7 @@ def main():
 
             normalize_off(dr, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.3f} minutes!')
             print(f'Output file: {output_file}.csv')
 
         else:

@@ -1,4 +1,4 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3.9
 
 '''
     Description: Plots altogether in one plot.
@@ -126,7 +126,7 @@ def main():
 
     print('Job done!')
 
-    plt.show()
+#    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
