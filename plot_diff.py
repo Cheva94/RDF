@@ -1,4 +1,4 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python3.10
 
 '''
     Description: Plots on one plot each argument.

@@ -1,4 +1,4 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python3.10
 
 '''
     Description: Pre-processing program to consider just the header and the

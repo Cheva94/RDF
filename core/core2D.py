@@ -1,11 +1,3 @@
-#!/usr/bin/env python3.9
-
-'''
-    Description: Core functions used in 2D RDF.
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: August, 2021.
-'''
-
 from pandas import read_csv
 from numpy import zeros, sqrt, array, pi
 

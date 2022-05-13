@@ -11,6 +11,7 @@ from pandas import read_csv
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
+from matplotlib.ticker import MultipleLocator
 
 def main():
 
@@ -49,6 +50,9 @@ def main():
             if (bottom != None) and (top != None):
                 ax.set_ylim(float(bottom), float(top))
 
+            ax.xaxis.set_major_locator(MultipleLocator(1))
+            ax.xaxis.set_minor_locator(MultipleLocator(0.2))
+
             plt.savefig(f"{file.split('.csv')[0]}.png")
             print(f"Image file: {file.split('.csv')[0]}.png")
 
@@ -70,6 +74,9 @@ def main():
                 ax.set_xlim(float(left), float(right))
             if (bottom != None) and (top != None):
                 ax.set_ylim(float(bottom), float(top))
+
+        ax.xaxis.set_major_locator(MultipleLocator(1))
+        ax.xaxis.set_minor_locator(MultipleLocator(0.2))
 
         plt.savefig(f"RDF3D_{'_'.join(F)}.png")
         print(f"Image file: RDF3D_{'_'.join(F)}.png")
