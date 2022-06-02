@@ -1,4 +1,4 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python3.10
 
 '''
     Description: Plots HDF curves.
@@ -86,6 +86,8 @@ def main():
         exit()
 
     print('Job done!')
+
+    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
