@@ -12,75 +12,52 @@ import numpy as np
 import matplotlib.pyplot as plt
 # from scipy.signal import find_peaks
 from matplotlib.ticker import MultipleLocator
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.patches as mpatches
+
+Verde = '#08a189'
+Blanco = '#FFFFFF'
+colorGrad = LinearSegmentedColormap.from_list("mycmap", [Blanco, Verde])
 
 def main():
 
-    left = args.x_axis[0]
-    right = args.x_axis[1]
-    bottom = args.y_axis[0]
-    top = args.y_axis[1]
     L = args.input_file
+    dxy = args.dxy
 
-    if args.multiPlot:
+    nBinX = int(10.56/dxy) + 1
+    xRange = [(binIdxX + 0.5) * dxy for binIdxX in range(nBinX)]
+    xLen = len(xRange)
 
-        for file in L:
-            data = read_csv(f'{file}').to_numpy()
-            name = file.split('.csv')[0].split('_')[1]
+    nBinY = int(14.94/dxy) + 1
+    yRange = [(binIdxY + 0.5) * dxy for binIdxY in range(nBinY)]
+    yLen = len(yRange)
 
-            fig, ax = plt.subplots()
+    for file in L:
+        data = read_csv(f'{file}', header=None).to_numpy()
+        name = file.split('.csv')[0].split('_')[2]
 
-            ax.axhspan(0.125, 1.902, color='k', alpha=0.10, label = "Ridges")
-            ax.axhspan(7.449, 9.286, color='k', alpha=0.10)
+        _, ax = plt.subplots()
 
-            disp = ax.scatter(data[:,0], data[:,1], c = data[:,2], cmap = 'summer_r', s=10, label = name)
-            fig.colorbar(disp)
-            ax.set_xlabel('x [A]')
-            ax.set_ylabel('y [A]')
-            ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol = 4)
+        cresta = ax.axhspan(0, 1.9, color='k', alpha=0.10)
+        ax.axhspan(7.5, 9.4, color='k', alpha=0.10)
 
-            if (left != None) and (right != None):
-                ax.set_xlim(float(left), float(right))
-            if (bottom != None) and (top != None):
-                ax.set_ylim(float(bottom), float(top))
+        mapa = data[:,2].reshape((xLen, yLen)).T
+        mapa = np.where(mapa > 0.15*np.max(mapa), mapa, 0.0)
+        ax.contour(xRange, yRange, mapa, 40, cmap='summer_r')
+        atomo = mpatches.Patch(color=Verde)
 
-            ax.xaxis.set_major_locator(MultipleLocator(1))
-            ax.xaxis.set_minor_locator(MultipleLocator(0.2))
+        ax.set_xlabel('x [A]')
+        ax.set_ylabel('y [A]')
+        ax.legend([cresta, atomo], ['Crestas', name], loc='lower center', bbox_to_anchor=(0.5, 1), ncol = 4)
 
-            plt.savefig(f"{file.split('.csv')[0]}.png")
-            print(f"Image file: {file.split('.csv')[0]}.png")
-
-    elif args.onePlot:
-
-        F = []
-        fig, ax = plt.subplots()
-        
-        ax.axhspan(0.125, 1.902, color='k', alpha=0.10, label = "Ridges")
-        ax.axhspan(7.449, 9.286, color='k', alpha=0.10)
-
-        for file in L:
-            data = read_csv(f'{file}').to_numpy()
-            name = file.split('.csv')[0].split('_')[1]
-            F.append(name)
-
-            ax.scatter(data[:,0], data[:,1], label = name, s = 10)
-            ax.set_xlabel('x [A]')
-            ax.set_ylabel('y [A]')
-            ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol = 4)
-
-            if (left != None) and (right != None):
-                ax.set_xlim(float(left), float(right))
-            if (bottom != None) and (top != None):
-                ax.set_ylim(float(bottom), float(top))
+        ax.set_xlim(0, 10.56)
+        ax.set_ylim(0, 14.94)
 
         ax.xaxis.set_major_locator(MultipleLocator(1))
         ax.xaxis.set_minor_locator(MultipleLocator(0.2))
 
-        plt.savefig(f"PDF_{'_'.join(F)}.png")
-        print(f"Image file: PDF_{'_'.join(F)}.png")
-
-    else:
-        print('Must choose between one plot (-one) or multiple plots (-multi).')
-        exit()
+        plt.savefig(f"{file.split('.csv')[0]}.png")
+        print(f"Image file: {file.split('.csv')[0]}.png")
 
     print('Job done!')
 
@@ -89,15 +66,8 @@ if __name__ == "__main__":
 
     parser.add_argument('input_file', nargs = '+', help = "Path to the csv files.")
 
-    parser.add_argument('-x', '--x_axis', nargs = 2, default = [None, None],
-                        help = "Choose range for X axis.")
-
-    parser.add_argument('-y', '--y_axis', nargs = 2, default = [None, None],
-                        help = "Choose range for Y axis.")
-
-    parser.add_argument('-one', '--onePlot', action = 'store_true', help = "Plots altogether in one plot.")
-
-    parser.add_argument('-multi', '--multiPlot', action = 'store_true', help = "Plots each argument on one plot.")
+    parser.add_argument('dxy', type = float, help = "Increment to be considered \
+                        along x and y axis.")
 
     args = parser.parse_args()
 

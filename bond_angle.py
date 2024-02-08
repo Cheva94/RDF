@@ -1,17 +1,8 @@
 #!/usr/bin/python3.10
 
-'''
-    Calculation: bond angle.
-    Description: Determines the bond angle of a triple of atoms for a system when
-                given a xyz. Everything is in BAtrom.
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: August, 2021.
-'''
-
 import argparse
 from pandas import read_csv
-from time import time
-from numpy import sqrt, inner, pi, arccos, mean, std
+from numpy import sqrt, inner, pi, arccos, mean, std, array, argsort
 
 def PBC(dist, length):
     '''
@@ -21,24 +12,23 @@ def PBC(dist, length):
     return dist - length * int(2*dist/length)
 
 def main():
-    start = time()
 
     name = args.input_file
     center = args.central_atom
-    neigh1 = args.neighboring_atom[0]
-    neigh2 = args.neighboring_atom[1]
+    neigh1 = args.neighboring_atom1
+    neigh2 = args.neighboring_atom2
     Rcut = args.Rcut
     Rcut2 = Rcut * Rcut
     convfact = 180 / pi
     Rmin = args.Rmin
     if Rmin == None:
-        Rmin = 0
+        Rmin = 0.01
     Rmin2 = Rmin * Rmin
 
     xsf = read_csv(name, header = None, delim_whitespace = True,
                     names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
     Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
-    xyz = xsf.iloc[6:,0:4].reset_index(drop=True)
+    xyz = xsf.iloc[8:,0:4].reset_index(drop=True)
 
     BA = []
     ID = []
@@ -65,18 +55,26 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux1.append((rx.index[i],rx.index[j],sqrt(d2), r2))
-
+                    aux1.append((rx.index[i]+1,rx.index[j]+1,sqrt(d2), r2))
+        
         L = len(aux1)
         for m in range(L):
             for n in range(m+1, L):
                 if aux1[m][0] == aux1[n][0]:
                     angle = convfact * arccos(inner(aux1[m][3], aux1[n][3]) / (aux1[m][2] * aux1[n][2]))
-                    ID.append(f'{aux1[m][1]} - {aux1[m][0]} - {aux1[n][1]}')
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux1[n][1]}-')
                     BA.append(angle)
                 elif aux1[m][1] == aux1[n][1]:
                     angle = convfact * arccos(inner(aux1[m][3], aux1[n][3]) / (aux1[m][2] * aux1[n][2]))
-                    ID.append(f'{aux1[m][0]} - {aux1[m][1]} - {aux1[n][0]}')
+                    ID.append(f'-{neigh1}{aux1[m][0]}-{center}{aux1[m][1]}-{neigh2}{aux1[n][0]}-')
+                    BA.append(angle)
+                elif aux1[m][0] == aux1[n][1]:
+                    angle = convfact * arccos(inner(aux1[m][3], aux1[n][3]) / (aux1[m][2] * aux1[n][2]))
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux1[n][0]}-')
+                    BA.append(angle)
+                elif aux1[m][1] == aux1[n][0]:
+                    angle = convfact * arccos(inner(aux1[m][3], aux1[n][3]) / (aux1[m][2] * aux1[n][2]))
+                    ID.append(f'-{neigh1}{aux1[m][0]}-{center}{aux1[m][1]}-{neigh2}{aux1[n][1]}-')
                     BA.append(angle)
 
     elif neigh1 == neigh2:
@@ -107,14 +105,14 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux1.append((rxCenter.index[i],rxNeigh.index[j],sqrt(d2), r2))
+                    aux1.append((rxCenter.index[i]+1,rxNeigh.index[j]+1,sqrt(d2), r2))
 
         L = len(aux1)
         for m in range(L):
             for n in range(m+1, L):
                 if aux1[m][0] == aux1[n][0]:
                     angle = convfact * arccos(inner(aux1[m][3], aux1[n][3]) / (aux1[m][2] * aux1[n][2]))
-                    ID.append(f'{aux1[m][1]} - {aux1[m][0]} - {aux1[n][1]}')
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux1[n][1]}-')
                     BA.append(angle)
 
     elif neigh1 == center:
@@ -145,7 +143,7 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux1.append((rxCenter.index[i],rxNeigh.index[j],sqrt(d2), r2))
+                    aux1.append((rxCenter.index[i]+1,rxNeigh.index[j]+1,sqrt(d2), r2))
 
         for i in range(nCenter):
             for j in range(i+1, nCenter):
@@ -160,7 +158,7 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux2.append((rxCenter.index[i],rxCenter.index[j],sqrt(d2), r2))
+                    aux2.append((rxCenter.index[i]+1,rxCenter.index[j]+1,sqrt(d2), r2))
 
         L1 = len(aux1)
         L2 = len(aux2)
@@ -168,11 +166,11 @@ def main():
             for n in range(L2):
                 if aux1[m][0] == aux2[n][0]:
                     angle = convfact * arccos(inner(aux1[m][3], aux2[n][3]) / (aux1[m][2] * aux2[n][2]))
-                    ID.append(f'{aux1[m][1]} - {aux1[m][0]} - {aux2[n][1]}')
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux2[n][1]}-')
                     BA.append(angle)
                 elif aux1[m][0] == aux2[n][1]:
-                    angle = convfact * arccos(inner(aux1[m][3], -aux2[n][3]) / (aux1[m][2] * aux2[n][2]))
-                    ID.append(f'{aux1[m][1]} - {aux1[m][0]} - {aux2[n][0]}')
+                    angle = convfact * arccos(inner(aux1[m][3], -array(aux2[n][3])) / (aux1[m][2] * aux2[n][2]))
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux2[n][0]}-')
                     BA.append(angle)
 
     elif neigh2 == center:
@@ -203,7 +201,7 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux1.append((rxCenter.index[i],rxNeigh.index[j],sqrt(d2), r2))
+                    aux1.append((rxCenter.index[i]+1,rxNeigh.index[j]+1,sqrt(d2), r2))
 
         for i in range(nCenter):
             for j in range(i+1, nCenter):
@@ -218,7 +216,7 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux2.append((rxCenter.index[i],rxCenter.index[j],sqrt(d2), r2))
+                    aux2.append((rxCenter.index[i]+1,rxCenter.index[j]+1,sqrt(d2), r2))
 
         L1 = len(aux1)
         L2 = len(aux2)
@@ -226,11 +224,11 @@ def main():
             for n in range(L2):
                 if aux1[m][0] == aux2[n][0]:
                     angle = convfact * arccos(inner(aux1[m][3], aux2[n][3]) / (aux1[m][2] * aux2[n][2]))
-                    ID.append(f'{aux1[m][1]} - {aux1[m][0]} - {aux2[n][1]}')
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux2[n][1]}-')
                     BA.append(angle)
                 elif aux1[m][0] == aux2[n][1]:
-                    angle = convfact * arccos(inner(aux1[m][3], -aux2[n][3]) / (aux1[m][2] * aux2[n][2]))
-                    ID.append(f'{aux1[m][1]} - {aux1[m][0]} - {aux2[n][0]}')
+                    angle = convfact * arccos(inner(aux1[m][3], -array(aux2[n][3])) / (aux1[m][2] * aux2[n][2]))
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux2[n][0]}-')
                     BA.append(angle)
 
     else:
@@ -267,7 +265,7 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux1.append((rxCenter.index[i],rxNeigh1.index[j],sqrt(d2), r2))
+                    aux1.append((rxCenter.index[i]+1,rxNeigh1.index[j]+1,sqrt(d2), r2))
 
         for i in range(nCenter):
             for j in range(nNeigh2):
@@ -282,7 +280,7 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    aux2.append((rxCenter.index[i],rxNeigh2.index[j],sqrt(d2), r2))
+                    aux2.append((rxCenter.index[i]+1,rxNeigh2.index[j]+1,sqrt(d2), r2))
 
         L1 = len(aux1)
         L2 = len(aux2)
@@ -290,22 +288,25 @@ def main():
             for n in range(L2):
                 if aux1[m][0] == aux2[n][0]:
                     angle = convfact * arccos(inner(aux1[m][3], aux2[n][3]) / (aux1[m][2] * aux2[n][2]))
-                    ID.append(f'{aux1[m][1]} - {aux1[m][0]} - {aux2[n][1]}')
+                    ID.append(f'-{neigh1}{aux1[m][1]}-{center}{aux1[m][0]}-{neigh2}{aux2[n][1]}-')
                     BA.append(angle)
 
-    Summary = f'Summary >> {neigh1}-{center}-{neigh2} = ({mean(BA):.1f} +- {std(BA):.1f})° ; Count = {len(BA)} <<'
+    Summary = f'\nSummary\n  -{neigh1}-{center}-{neigh2}- = ({mean(BA):.3f} +- {std(BA):.3f})°\n  Count = {len(BA)}'
+    
+    ID = array(ID)
+    BA = array(BA)
+    AS = argsort(BA)
+    ID = ID[AS]
+    BA = BA[AS]
 
     with open(f'BA_{neigh1}-{center}-{neigh2}.csv', 'w') as f:
-        f.write('==== Bond Agnle in degrees ==== \n\n')
-        f.write('Atoms ID, Angle \n')
+        f.write('==== Bond angle in degrees ==== \n\n')
+        f.write('Atoms ID\tAngle \n')
         for i in range(len(BA)):
-            f.write(f'{ID[i]}, {BA[i]:.2f} \n')
+            f.write(f'{ID[i]}\t{BA[i]:.3f} \n')
         f.write(f'\n {Summary}')
 
-    print(f'Job done in {(time() - start):.3f} seconds!')
-    print(f'Output file: {neigh1}-{center}-{neigh2}.csv')
     print(f'{Summary}')
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -315,9 +316,11 @@ if __name__ == "__main__":
     parser.add_argument('Rcut', type = float, help = "Maximum distance to be \
                         considered as bond length.")
 
+    parser.add_argument('neighboring_atom1')
+    
     parser.add_argument('central_atom')
 
-    parser.add_argument('neighboring_atom', nargs = 2)
+    parser.add_argument('neighboring_atom2')
 
     parser.add_argument('--Rmin', type = float,
                         help = "Minimum distance to be considered as bond length.")

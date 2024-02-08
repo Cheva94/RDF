@@ -98,7 +98,7 @@ def sample_pdf(Lx, Ly, xyz, dxy, PDF, nAt):
 ######################## Normalizing functions
 ################################################################################
 
-def normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin):
+def normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin, Hmax):
     '''
     Normalize the HDF.
     '''
@@ -106,9 +106,11 @@ def normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin):
     HDF /= frames_count
 
     with open(f'{output_file}.csv', 'w') as f:
+        f.write(f'{Hmin:.2f}, 0.0000\n')
         for binIdx in range(nBin):
             h = (binIdx + 0.5) * dh + Hmin
-            f.write(f'{h:.2f}, {HDF[binIdx]:.4f} \n')
+            f.write(f'{h:.2f}, {HDF[binIdx]:.4f}\n')
+        f.write(f'{Hmax:.2f}, 0.0000\n')
 
 def normalize_pdf(dxy, nBinX, nBinY, frames_count, PDF, output_file):
     '''
@@ -123,7 +125,9 @@ def normalize_pdf(dxy, nBinX, nBinY, frames_count, PDF, output_file):
             for binIdxY in range(nBinY):
                 y = (binIdxY + 0.5) * dxy
 
-                if PDF[binIdxX, binIdxY] == 0:
-                    continue
-                else:
-                    f.write(f'{x:.2f}, {y:.2f}, {PDF[binIdxX, binIdxY]:.4f} \n')
+                f.write(f'{x:.2f}, {y:.2f}, {PDF[binIdxX, binIdxY]:.4f}\n')
+
+                # if PDF[binIdxX, binIdxY] == 0:
+                #     continue
+                # else:
+                #     f.write(f'{x:.2f}, {y:.2f}, {PDF[binIdxX, binIdxY]:.4f}\n')

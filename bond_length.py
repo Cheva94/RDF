@@ -1,17 +1,8 @@
 #!/usr/bin/python3.10
 
-'''
-    Calculation: bond length.
-    Description: Determines the bond length of a pair of atoms for a system when
-                given a xsf. Everything is in Angstrom. It takes into account PBC.
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: October, 2021.
-'''
-
 import argparse
 from pandas import read_csv
-from time import time
-from numpy import sqrt, inner, mean, std
+from numpy import sqrt, mean, std, array, argsort
 
 def PBC(dist, length):
     '''
@@ -21,7 +12,6 @@ def PBC(dist, length):
     return dist - length * int(2*dist/length)
 
 def main():
-    start = time()
 
     name = args.input_file
     at1 = args.atoms[0]
@@ -30,13 +20,13 @@ def main():
     Rcut2 = Rcut * Rcut
     Rmin = args.Rmin
     if Rmin == None:
-        Rmin = 0
+        Rmin = 0.01
     Rmin2 = Rmin * Rmin
 
     xsf = read_csv(name, header = None, delim_whitespace = True,
                     names=['idAt', 'rx', 'ry', 'rz', 'fx', 'fy', 'fz'])
     Lx, Ly, Lz = float(xsf.iloc[3,0]), xsf.iloc[4,1], xsf.iloc[5,2]
-    xyz = xsf.iloc[6:,0:4].reset_index(drop=True)
+    xyz = xsf.iloc[8:,0:4].reset_index(drop=True)
 
     ID = []
     POS = []
@@ -68,14 +58,13 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    ID.append(f'{rx1.index[i]} - {rx2.index[j]}')
-                    POS.append(f'({rx1.iloc[i]}; {ry1.iloc[i]}; {rz1.iloc[i]}) - ({rx2.iloc[j]}; {ry2.iloc[j]}; {rz2.iloc[j]})')
+                    ID.append(f'-{at1}{rx1.index[i]+1}-{at2}{rx2.index[j]+1}-')
+                    POS.append(f'-({rx1.iloc[i]};{ry1.iloc[i]};{rz1.iloc[i]})-({rx2.iloc[j]};{ry2.iloc[j]};{rz2.iloc[j]})-')
                     BL.append(sqrt(d2))
 
     else:
         nAt = xyz.iloc[:,0].value_counts()[at1]
         xyz = xyz[xyz['idAt'] == at1]
-        id = xyz.iloc[:, 0]
         rx = xyz.iloc[:, 1]
         ry = xyz.iloc[:, 2]
         rz = xyz.iloc[:, 3]
@@ -92,21 +81,27 @@ def main():
 
                 d2 = dx**2 + dy**2 + dz**2
                 if ((d2>= Rmin2) and (d2<= Rcut2)):
-                    ID.append(f'{rx.index[i]} - {rx.index[j]}')
-                    POS.append(f'({rx.iloc[i]}; {ry.iloc[i]}; {rz.iloc[i]}) - ({rx.iloc[j]}; {ry.iloc[j]}; {rz.iloc[j]})')
+                    ID.append(f'-{at1}{rx.index[i]+1}-{at2}{rx.index[j]+1}-')
+                    POS.append(f'-({rx.iloc[i]};{ry.iloc[i]};{rz.iloc[i]})-({rx.iloc[j]};{ry.iloc[j]};{rz.iloc[j]})-')
                     BL.append(sqrt(d2))
 
-    Summary = f'Summary >> {at1}-{at2} = ({mean(BL):.4f} +- {std(BL):.4f}) A ; Count = {len(BL)} <<'
+    Summary = f'\nSummary\n  -{at1}-{at2}- = ({mean(BL):.4f} +- {std(BL):.4f}) A\n  Count = {len(BL)}'
+
+    ID = array(ID)
+    BL = array(BL)
+    POS = array(POS)
+    AS = argsort(BL)
+    ID = ID[AS]
+    BL = BL[AS]
+    POS = POS[AS]
 
     with open(f'BL_{at1}-{at2}.csv', 'w') as f:
-        f.write('==== Bond Length in Angstroms ==== \n\n')
-        f.write('Atoms ID, Atoms Position, Distance \n')
+        f.write('==== Bond length in Angstroms ==== \n\n')
+        f.write('Atoms ID\tDistance\tAtoms Position \n')
         for i in range(len(BL)):
-            f.write(f'{ID[i]}, {POS[i]}, {BL[i]:.4f} \n')
-        f.write(f'\n {Summary}')
+            f.write(f'{ID[i]}\t{BL[i]:.4f}\t{POS[i]} \n')
+        f.write(f'{Summary}')
 
-    print(f'Job done in {(time() - start):.3f} seconds!')
-    print(f'Output file: {at1}-{at2}.csv')
     print(f'{Summary}')
 
 if __name__ == "__main__":

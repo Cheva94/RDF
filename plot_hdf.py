@@ -24,23 +24,23 @@ def main():
     if args.multiPlot:
 
         for file in L:
-            data = read_csv(f'{file}').to_numpy()
+            data = read_csv(f'{file}', header=None).to_numpy()
             name = file.split('.csv')[0].split('_', 1)[1]
 
-            peaks, _ = find_peaks(data[:,1], height=0.1*np.max(data[:,1]), distance=8)
+            peaks, _ = find_peaks(data[:,1], height=0.1*np.max(data[:,1]), distance=1)
             peaksx, peaksy = data[:,0][peaks], data[:,1][peaks]
 
-            valls, _ = find_peaks(-data[:,1], distance=10)
+            valls, _ = find_peaks(-data[:,1], distance=1)
             vallsx, vallsy = data[:,0][valls], data[:,1][valls]
 
             fig, ax = plt.subplots()
             ax.plot(data[:,0], data[:,1], label = name)
             ax.plot(peaksx, 1.04*peaksy, lw = 0, marker=11, color='black')
             for i in range(len(peaksx)):
-                ax.annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], 1.05*peaksy[i]), fontsize=10, ha='center')
-            ax.plot(vallsx, 0.96*vallsy, lw = 0, marker=10, color='red')
+                ax.annotate(f'{peaksx[i]:.1f}', xy = (peaksx[i], 1.05*peaksy[i]), fontsize=10, ha='center')
+            ax.plot(vallsx, 0.5*vallsy, lw = 0, marker=10, color='red')
             for i in range(len(vallsx)):
-                ax.annotate(f'{vallsx[i]:.2f}', xy = (vallsx[i], 0.88*vallsy[i]), fontsize=10, ha='center', color='red')
+                ax.annotate(f'{vallsx[i]:.1f}', xy = (vallsx[i], -0.05*vallsy[i]), fontsize=10, ha='center', color='red')
             ax.set_xlabel('z-Height [A]')
             ax.set_ylabel('HDF')
             ax.legend()
@@ -51,7 +51,7 @@ def main():
                 ax.set_ylim(float(bottom), float(top))
 
             ax.xaxis.set_major_locator(MultipleLocator(1))
-            ax.xaxis.set_minor_locator(MultipleLocator(0.2))
+            ax.xaxis.set_minor_locator(MultipleLocator(0.5))
 
             plt.savefig(f"{file.split('.csv')[0]}.png")
             print(f"Image file: {file.split('.csv')[0]}.png")
@@ -61,22 +61,22 @@ def main():
         F = []
         fig, ax = plt.subplots()
         for file in L:
-            data = read_csv(f'{file}').to_numpy()
+            data = read_csv(f'{file}', header=None).to_numpy()
             name = file.split('.csv')[0].split('_', 1)[1]
             F.append(name)
 
             ax.plot(data[:,0], data[:,1], label = name)
             ax.set_xlabel('z-Height [A]')
             ax.set_ylabel('HDF')
-            ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol = 4)
+            ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol = 5)
 
             if (left != None) and (right != None):
                 ax.set_xlim(float(left), float(right))
             if (bottom != None) and (top != None):
                 ax.set_ylim(float(bottom), float(top))
 
-        ax.xaxis.set_major_locator(MultipleLocator(1))
-        ax.xaxis.set_minor_locator(MultipleLocator(0.2))
+        # ax.xaxis.set_major_locator(MultipleLocator(1))
+        # ax.xaxis.set_minor_locator(MultipleLocator(0.5))
 
         plt.savefig(f"HDF-{'-'.join(F)}.png")
         print(f"Image file: HDF-{'-'.join(F)}.png")
@@ -86,8 +86,6 @@ def main():
         exit()
 
     print('Job done!')
-
-    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

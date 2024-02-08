@@ -61,7 +61,7 @@ def main():
         if output_file == None:
             output_file = f'HDF_{at}x{nAtAve:.0f}'
 
-        normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin)
+        normalize_hdf(dh, nBin, frames_count, HDF, output_file, Hmin, Hmax)
 
         print(f'Job done in {(time() - start)/60:.3f} minutes!')
         print(f'Output file: {output_file}.csv')
