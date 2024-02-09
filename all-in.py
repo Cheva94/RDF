@@ -37,6 +37,7 @@ def main():
     xyz_all = xsf.iloc[6:,0:4].reset_index(drop=True)
     rows = nAtTot + 2
     L = []
+    oldFrame = 0
 
     for frame in range(frames_total):
         xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :].to_numpy()
@@ -64,18 +65,36 @@ def main():
 
             L.append((at[i], rx[i], ry[i], rz[i]))
 
+        cutmod = 5000
+        if (frame+1) % cutmod  == 0:
+            print(f'dump: {frame+1}')
+
+            A = array(L)
+
+            with open(f'{output_file}.xsf','a') as f:
+                for partframe in range(cutmod):
+                    f.write(f' PRIMCOORD {oldFrame+partframe+1} \n')
+                    f.write(f'{nAtTot} 1 \n')
+                    xyzw = A[(partframe * nAtTot) : ((partframe + 1) * nAtTot), :]
+
+                    for line in range(nAtTot):
+                        f.write(f'{xyzw[line,0]} \t {float(xyzw[line,1]):.6f} \t {float(xyzw[line,2]):.6f} \t {float(xyzw[line,3]):.6f} \n')
+
+            L = []
+            oldFrame += cutmod
+
     A = array(L)
 
     with open(f'{output_file}.xsf','a') as f:
-        for frame in range(frames_total):
-            f.write(f' PRIMCOORD {frame+1} \n')
+        for lastframe in range(frames_total-oldFrame):
+            f.write(f' PRIMCOORD {oldFrame+lastframe+1} \n')
             f.write(f'{nAtTot} 1 \n')
-            xyz = A[(frame * nAtTot) : ((frame + 1) * nAtTot), :]
+            xyz = A[(lastframe * nAtTot) : ((lastframe + 1) * nAtTot), :]
 
             for line in range(nAtTot):
                 f.write(f'{xyz[line,0]} \t {float(xyz[line,1]):.6f} \t {float(xyz[line,2]):.6f} \t {float(xyz[line,3]):.6f} \n')
 
-    print(f'Job done in {(time() - start):.3f} seconds!')
+    print(f'Job done in {(time() - start)/60:.3f} minutes!')
     print(f'Output file: {output_file}.xsf')
 
 if __name__ == "__main__":
