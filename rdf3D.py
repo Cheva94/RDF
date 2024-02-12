@@ -110,9 +110,6 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
-            print(f'\tCantidad de frames: {frames_total}.')
-            print(f'\tCantidad de {at}: {nAt}.')
-
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
@@ -120,6 +117,9 @@ def main():
             frames_end = args.frames[1]
             if frames_end == -1:
                 frames_end = frames_total
+
+            print(f'\tCantidad de frames: {frames_end-frames_start}.')
+            print(f'\tCantidad de {at}: {nAt}.')
 
             for frame in range(frames_start, frames_end):
                 print(frame)
@@ -147,10 +147,6 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = userfile_multi(args.input_file, at1, at2)
 
-            print(f'\tCantidad de frames: {frames_total}.')
-            print(f'\tCantidad de {at1}: {nAt1}.')
-            print(f'\tCantidad de {at2}: {nAt2}.')
-
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
@@ -158,6 +154,10 @@ def main():
             frames_end = args.frames[1]
             if frames_end == -1:
                 frames_end = frames_total
+
+            print(f'\tCantidad de frames: {frames_end-frames_start}.')
+            print(f'\tCantidad de {at1}: {nAt1}.')
+            print(f'\tCantidad de {at2}: {nAt2}.')
 
             for frame in range(frames_start, frames_end):
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
