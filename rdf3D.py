@@ -122,7 +122,6 @@ def main():
             print(f'\tCantidad de {at}: {nAt}.')
 
             for frame in range(frames_start, frames_end):
-                print(frame)
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz = xyz[xyz['idAt'] == at].to_numpy()
                 sample_off_mono(xyz, dr, Rcut, RDF, nAt)
