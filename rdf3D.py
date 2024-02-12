@@ -119,7 +119,7 @@ def main():
                 frames_end = frames_total
 
             print(f'\tCantidad de frames: {frames_end-frames_start}.')
-            print(f'\tCantidad de {at}: {nAt}.')
+            print(f'\t\tCantidad de {at}: {nAt}.')
 
             for frame in range(frames_start, frames_end):
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
@@ -127,7 +127,7 @@ def main():
                 sample_off_mono(xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
 
-                if frames_count % 1000 == 0:
+                if frames_count % 5000 == 0:
                     print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
@@ -155,8 +155,8 @@ def main():
                 frames_end = frames_total
 
             print(f'\tCantidad de frames: {frames_end-frames_start}.')
-            print(f'\tCantidad de {at1}: {nAt1}.')
-            print(f'\tCantidad de {at2}: {nAt2}.')
+            print(f'\t\tCantidad de {at1}: {nAt1}.')
+            print(f'\t\tCantidad de {at2}: {nAt2}.')
 
             for frame in range(frames_start, frames_end):
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
@@ -165,7 +165,7 @@ def main():
                 sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                 frames_count += 1
 
-                if frames_count % 1000 == 0:
+                if frames_count % 5000 == 0:
                     print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
