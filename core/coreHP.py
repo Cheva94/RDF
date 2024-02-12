@@ -30,7 +30,7 @@ def hist_init_hdf(minimum, maximum, increment):
     Initialize 2D histogram for HDF.
     '''
 
-    nBin = int((maximum - minimum)/increment) + 1
+    nBin = int((maximum - minimum)/increment)# + 1
     maximum = nBin * increment + minimum
     H = zeros(nBin)
 

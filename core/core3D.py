@@ -47,7 +47,7 @@ def hist_init(maximum, increment):
     Initialize 2D histogram.
     '''
 
-    nBin = int(maximum/increment) + 1
+    nBin = int(maximum/increment) # + 1
     maximum = nBin * increment
     H = zeros(nBin)
 
@@ -167,7 +167,7 @@ def sample_on_multi(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
 ######################## Normalizing functions
 ################################################################################
 
-def normalize_off(dr, nBin, frames_count, RDF, output_file):
+def normalize_off(dr, Rcut, nBin, frames_count, RDF, output_file):
     '''
     Normalize the 3D RDF without PBC.
     '''
@@ -177,11 +177,13 @@ def normalize_off(dr, nBin, frames_count, RDF, output_file):
     RDF /= 0.5 * frames_count
 
     with open(f'{output_file}.csv', 'w') as f:
+        f.write('0.00, 0.0000\n')
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
             volShell = prefact * (binIdx + 0.5)**2
             RDF[binIdx] /= volShell
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
+        f.write(f'{Rcut:.1f}, 0.0000\n')
 
 def normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file):
     '''

@@ -126,11 +126,11 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at}-{at}'
+                output_file = f'RDF3D_{at}-{at}_dr-{dr:.1f}_Rcut-{Rcut:.1f}'
 
-            normalize_off(dr, nBin, frames_count, RDF, output_file)
+            normalize_off(dr, Rcut, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done in {(time() - start)/60:.3f} minutes!')
+            print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
 
         elif args.multicomponents:
@@ -157,11 +157,11 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at1}-{at2}'
+                output_file = f'RDF3D_{at1}-{at2}_dr-{dr:.1f}_Rcut-{Rcut:.1f}'
 
-            normalize_off(dr, nBin, frames_count, RDF, output_file)
+            normalize_off(dr, Rcut, nBin, frames_count, RDF, output_file)
 
-            print(f'Job done in {(time() - start)/60:.3f} minutes!')
+            print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
 
         else:
