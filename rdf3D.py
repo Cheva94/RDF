@@ -110,6 +110,9 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
+            print(f'\tCantidad de frames: {frames_total}.')
+            print(f'\tCantidad de {at}: {nAt}.')
+
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
@@ -119,10 +122,14 @@ def main():
                 frames_end = frames_total
 
             for frame in range(frames_start, frames_end):
+                print(frame)
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz = xyz[xyz['idAt'] == at].to_numpy()
                 sample_off_mono(xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
+
+                if frames_count % 1000 == 0:
+                    print(f'\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
             if output_file == None:
@@ -140,6 +147,10 @@ def main():
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = userfile_multi(args.input_file, at1, at2)
 
+            print(f'\tCantidad de frames: {frames_total}.')
+            print(f'\tCantidad de {at1}: {nAt1}.')
+            print(f'\tCantidad de {at2}: {nAt2}.')
+
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
@@ -154,6 +165,9 @@ def main():
                 xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
                 sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                 frames_count += 1
+
+                if frames_count % 1000 == 0:
+                    print(f'\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
             if output_file == None:
