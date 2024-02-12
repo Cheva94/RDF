@@ -27,8 +27,7 @@ def main():
             data = read_csv(f'{file}').to_numpy()
             name = file.split('.csv')[0].split('_', 1)[1]
 
-            # peaks, _ = find_peaks(data[:,1], height=0.6, distance=8)
-            peaks, _ = find_peaks(data[:,1], height=0.001, distance=11)
+            peaks, _ = find_peaks(data[:,1], height=0.001, distance=1)
             peaksx, peaksy = data[:,0][peaks], data[:,1][peaks]
 
             # valls, _ = find_peaks(-data[:,1], distance=10)
@@ -36,9 +35,9 @@ def main():
 
             fig, ax = plt.subplots()
             ax.plot(data[:,0], data[:,1], label = name)
-            ax.plot(peaksx, peaksy + 0.001, lw = 0, marker=11, color='black')
+            ax.plot(peaksx, peaksy + 0.005, lw = 0, marker=11, color='black')
             for i in range(len(peaksx)):
-                ax.annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.0018), fontsize=10, ha='center')
+                ax.annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.01), fontsize=10, ha='center')
             # ax.plot(vallsx, 0.96*vallsy, lw = 0, marker=10, color='red')
             # for i in range(len(vallsx)):
             #     ax.annotate(f'{vallsx[i]:.2f}', xy = (vallsx[i], 0.88*vallsy[i]), fontsize=10, ha='center', color='red')
@@ -51,10 +50,8 @@ def main():
             if (bottom != None) and (top != None):
                 ax.set_ylim(float(bottom), float(top))
 
-            # ax.xaxis.set_major_locator(MultipleLocator(1))
-            # ax.xaxis.set_minor_locator(MultipleLocator(0.2))
-            ax.xaxis.set_major_locator(MultipleLocator(2))
-            ax.xaxis.set_minor_locator(MultipleLocator(1))
+            ax.xaxis.set_major_locator(MultipleLocator(1))
+            ax.xaxis.set_minor_locator(MultipleLocator(0.5))
 
             plt.savefig(f"{file.split('.csv')[0]}.png")
             print(f"Image file: {file.split('.csv')[0]}.png")
@@ -71,17 +68,15 @@ def main():
             ax.plot(data[:,0], data[:,1], label = name)
             ax.set_xlabel(f'Distance [A]')
             ax.set_ylabel('RDF [3D]')
-            ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol = 4)
+            ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol = 2)
 
             if (left != None) and (right != None):
                 ax.set_xlim(float(left), float(right))
             if (bottom != None) and (top != None):
                 ax.set_ylim(float(bottom), float(top))
 
-        # ax.xaxis.set_major_locator(MultipleLocator(1))
-        # ax.xaxis.set_minor_locator(MultipleLocator(0.2))
-        ax.xaxis.set_major_locator(MultipleLocator(2))
-        ax.xaxis.set_minor_locator(MultipleLocator(1))
+        ax.xaxis.set_major_locator(MultipleLocator(1))
+        ax.xaxis.set_minor_locator(MultipleLocator(0.5))
 
         plt.savefig(f"RDF3D_{'_'.join(F)}.png")
         print(f"Image file: RDF3D_{'_'.join(F)}.png")

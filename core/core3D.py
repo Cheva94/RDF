@@ -183,7 +183,7 @@ def normalize_off(dr, Rcut, nBin, frames_count, RDF, output_file):
             volShell = prefact * (binIdx + 0.5)**2
             RDF[binIdx] /= volShell
             f.write(f'{r:.2f}, {RDF[binIdx]:.4f} \n')
-        f.write(f'{Rcut:.1f}, 0.0000\n')
+        f.write(f'{Rcut:.1f}, {RDF[-1]:.4f} \n')
 
 def normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file):
     '''
