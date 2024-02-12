@@ -37,10 +37,10 @@ def main():
             ax.plot(data[:,0], data[:,1], label = name)
             ax.plot(peaksx, peaksy + 0.005, lw = 0, marker=11, color='black')
             for i in range(len(peaksx)):
-                ax.annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.01), fontsize=10, ha='center')
+                ax.annotate(f'{peaksx[i]:.1f}', xy = (peaksx[i], peaksy[i] + 0.01), fontsize=10, ha='center')
             # ax.plot(vallsx, 0.96*vallsy, lw = 0, marker=10, color='red')
             # for i in range(len(vallsx)):
-            #     ax.annotate(f'{vallsx[i]:.2f}', xy = (vallsx[i], 0.88*vallsy[i]), fontsize=10, ha='center', color='red')
+            #     ax.annotate(f'{vallsx[i]:.1f}', xy = (vallsx[i], 0.88*vallsy[i]), fontsize=10, ha='center', color='red')
             ax.set_xlabel(f'Distance [A]')
             ax.set_ylabel('RDF [3D]')
             ax.legend()
