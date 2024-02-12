@@ -128,7 +128,7 @@ def main():
                 frames_count += 1
 
                 if frames_count % 1000 == 0:
-                    print(f'\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
             if output_file == None:
@@ -166,7 +166,7 @@ def main():
                 frames_count += 1
 
                 if frames_count % 1000 == 0:
-                    print(f'\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
             if output_file == None:
