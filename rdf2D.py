@@ -16,6 +16,7 @@ from time import time
 
 def main():
     start = time()
+    started = strftime("%H:%M:%S")
 
     Rcut = args.Rcut
     dr = args.dr
@@ -65,7 +66,7 @@ def main():
             normalize_on_mono(Lx, Ly, Hmax - Hmin, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
             print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average within this slab.')
 
@@ -111,7 +112,7 @@ def main():
             normalize_on_multi(Lx, Ly, Hmax - Hmin, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
             print(f'There are {nAtSlab1/frames_count:.2f} {at1} atoms and {nAtSlab2/frames_count:.2f} {at2} atoms on average within this slab.')
 
@@ -145,11 +146,11 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at}-{at}_z-{Hmin:.2f}-{Hmax:.2f}'
+                output_file = f'RDF2D_{at}-{at}_dr-{dr:.1f}_Rcut-{Rcut:.1f}_z-{Hmin:.2f}-{Hmax:.2f}'
 
-            normalize_off(dr, nBin, frames_count, RDF, output_file)
+            normalize_off(dr, Rcut,nBin, frames_count, RDF, output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
             print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average within this slab.')
 
@@ -184,11 +185,11 @@ def main():
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF2D_{at1}-{at2}_z-{Hmin:.2f}-{Hmax:.2f}'
+                output_file = f'RDF2D_{at1}-{at2}_dr-{dr:.1f}_Rcut-{Rcut:.1f}_z-{Hmin:.2f}-{Hmax:.2f}'
 
-            normalize_off(dr, nBin, frames_count, RDF, output_file)
+            normalize_off(dr, Rcut,nBin, frames_count, RDF, output_file)
 
-            print(f'Job done in {(time() - start):.3f} seconds!')
+            print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
             print(f'There are {nAtSlab1/frames_count:.2f} {at1} atoms and {nAtSlab2/frames_count:.2f} {at2} atoms on average within this slab.')
 
