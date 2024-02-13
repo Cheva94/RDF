@@ -144,6 +144,9 @@ def main():
                 frames_count += 1
                 nAtSlab += nAt
 
+                if frames_count % 5000 == 0:
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
+
             output_file = args.output_file
             if output_file == None:
                 output_file = f'RDF2D_{at}-{at}_dr-{dr:.1f}_Rcut-{Rcut:.1f}_z-{Hmin:.2f}-{Hmax:.2f}'
@@ -182,6 +185,9 @@ def main():
                 frames_count += 1
                 nAtSlab1 += nAt1
                 nAtSlab2 += nAt2
+
+                if frames_count % 5000 == 0:
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
             if output_file == None:
