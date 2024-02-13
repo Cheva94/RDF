@@ -12,7 +12,7 @@
 
 import argparse
 from core.core2D import *
-from time import time
+from time import time, strftime
 
 def main():
     start = time()
