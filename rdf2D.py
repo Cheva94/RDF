@@ -31,7 +31,7 @@ def main():
     if args.periodic_boundary_conditions:
         if args.monocomponent:
             at = args.monocomponent
-            print(f'Running 3D RDF between {at} atoms with PBC.')
+            print(f'Running 2D RDF between {at} atoms with PBC.')
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
@@ -122,7 +122,7 @@ def main():
     else:
         if args.monocomponent:
             at = args.monocomponent
-            print(f'Running 3D RDF between {at} atoms without PBC.')
+            print(f'Running 2D RDF between {at} atoms without PBC.')
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt, xyz_all = userfile_mono(args.input_file, at)
 
@@ -160,7 +160,7 @@ def main():
         elif args.multicomponents:
             at1 = args.multicomponents[0]
             at2 = args.multicomponents[1]
-            print(f'Running 3D RDF between {at1} and {at2} atoms without PBC.')
+            print(f'Running 2D RDF between {at1} and {at2} atoms without PBC.')
 
             frames_total, Lx, Ly, Lz, nAtTot, nAt1, nAt2, xyz_all = userfile_multi(args.input_file, at1, at2)
 

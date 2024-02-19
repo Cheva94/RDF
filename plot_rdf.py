@@ -24,7 +24,7 @@ def main():
     if args.multiPlot:
 
         for file in L:
-            data = read_csv(f'{file}').to_numpy()
+            data = read_csv(f'{file}', header=None).to_numpy()
             name = file.split('.csv')[0].split('_', 1)[1]
 
             peaks, _ = find_peaks(data[:,1], height=0.001, distance=1)
@@ -61,7 +61,7 @@ def main():
         F = []
         fig, ax = plt.subplots()
         for file in L:
-            data = read_csv(f'{file}').to_numpy()
+            data = read_csv(f'{file}', header=None).to_numpy()
             name = file.split('.csv')[0].split('_', 1)[1]
             F.append(name)
 
