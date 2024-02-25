@@ -20,6 +20,7 @@ def main():
 
     Rcut = args.Rcut
     dr = args.dr
+    Hmin = args.Hcut[0]
     frames_count = 0
     frames_start = args.frames[0]
     if frames_start != 0:
@@ -113,31 +114,39 @@ def main():
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
+            nAtSlab = 0
 
             frames_end = args.frames[1]
             if frames_end == -1:
                 frames_end = frames_total
 
+            Hmax = args.Hcut[1]
+            if Hmax == -1:
+                Hmax = Lz
+
             print(f'\tCantidad de frames: {frames_end-frames_start}.')
-            print(f'\t\tCantidad de {at}: {nAt}.')
+            # print(f'\t\tCantidad total de {at}: {nAt}.')
 
             for frame in range(frames_start, frames_end):
                 if frames_count % 1000 == 0:
                     print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%    |    {strftime("%H:%M:%S")}')
 
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
-                xyz = xyz[xyz['idAt'] == at].to_numpy()
+                xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
+                nAt = len(xyz)
                 sample_off_mono(xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
+                nAtSlab += nAt
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at}-{at}_dr-{dr:.1f}_Rcut-{Rcut:.1f}'
+                output_file = f'RDF3D_{at}-{at}_dr-{dr:.1f}_Rcut-{Rcut:.1f}_Hcut-{Hmin:.1f}-{Hmax:.1f}'
 
             normalize_off(dr, Rcut, nBin, frames_count, RDF, output_file)
 
             print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
+            print(f'There are {nAtSlab/frames_count:.2f} {at} atoms on average within this slab.')
 
         elif args.multicomponents:
             at1 = args.multicomponents[0]
@@ -149,33 +158,44 @@ def main():
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
+            nAtSlab1 = 0
+            nAtSlab2 = 0
 
             frames_end = args.frames[1]
             if frames_end == -1:
                 frames_end = frames_total
 
+            Hmax = args.Hcut[1]
+            if Hmax == -1:
+                Hmax = Lz
+
             print(f'\tCantidad de frames: {frames_end-frames_start}.')
-            print(f'\t\tCantidad de {at1}: {nAt1}.')
-            print(f'\t\tCantidad de {at2}: {nAt2}.')
+            print(f'\t\tCantidad total de {at1}: {nAt1}.')
+            print(f'\t\tCantidad total de {at2}: {nAt2}.')
 
             for frame in range(frames_start, frames_end):
                 if frames_count % 1000 == 0:
                     print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%    |    {strftime("%H:%M:%S")}')
 
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
-                xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
-                xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
+                xyz1 = xyz[(xyz['idAt'] == at1) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
+                xyz2 = xyz[(xyz['idAt'] == at2) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
+                nAt1 = len(xyz1)
+                nAt2 = len(xyz2)
                 sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                 frames_count += 1
+                nAtSlab1 += nAt1
+                nAtSlab2 += nAt2
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at1}-{at2}_dr-{dr:.1f}_Rcut-{Rcut:.1f}'
+                output_file = f'RDF3D_{at1}-{at2}_dr-{dr:.1f}_Rcut-{Rcut:.1f}_z-{Hmin:.1f}-{Hmax:.1f}'
 
             normalize_off(dr, Rcut, nBin, frames_count, RDF, output_file)
 
             print(f'Job done in {(time() - start)/60:.1f} minutes!')
             print(f'Output file: {output_file}.csv')
+            print(f'There are {nAtSlab1/frames_count:.2f} {at1} atoms and {nAtSlab2/frames_count:.2f} {at2} atoms on average within this slab.')
 
         else:
             print('Must choose mono or multi, and select elements to compare.')
@@ -190,6 +210,9 @@ if __name__ == "__main__":
 
     parser.add_argument('dr', type = float, help = "Increment to be considered.")
 
+    parser.add_argument('-Hcut', type = float, nargs = 2, default = [0, -1],
+                        help = "Minimum and maximum heights to be considered.")
+    
     parser.add_argument('-f', '--frames', type = int, nargs = 2, default = [0, -1],
                         help = "Choose starting and ending frames to compute.")
 
