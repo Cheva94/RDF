@@ -130,9 +130,6 @@ def main():
                 sample_off_mono(xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
 
-                # if frames_count % 1000 == 0:
-                #     print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%\t|\tstrftime("%H:%M:%S")')
-
             output_file = args.output_file
             if output_file == None:
                 output_file = f'RDF3D_{at}-{at}_dr-{dr:.1f}_Rcut-{Rcut:.1f}'
@@ -162,14 +159,14 @@ def main():
             print(f'\t\tCantidad de {at2}: {nAt2}.')
 
             for frame in range(frames_start, frames_end):
+                if frames_count % 1000 == 0:
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%    |    {strftime("%H:%M:%S")}')
+
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
                 xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
                 sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                 frames_count += 1
-
-                if frames_count % 5000 == 0:
-                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
 
             output_file = args.output_file
             if output_file == None:
