@@ -122,13 +122,16 @@ def main():
             print(f'\t\tCantidad de {at}: {nAt}.')
 
             for frame in range(frames_start, frames_end):
+                if frames_count % 1000 == 0:
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%    |    {strftime("%H:%M:%S")}')
+
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
                 xyz = xyz[xyz['idAt'] == at].to_numpy()
                 sample_off_mono(xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
 
-                if frames_count % 5000 == 0:
-                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%')
+                # if frames_count % 1000 == 0:
+                #     print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%\t|\tstrftime("%H:%M:%S")')
 
             output_file = args.output_file
             if output_file == None:
