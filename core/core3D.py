@@ -1,6 +1,5 @@
 from pandas import read_csv
-from numpy import zeros, sqrt, array, pi, inner
-
+from numpy import zeros, sqrt, array, pi, inner, hstack
 ################################################################################
 ######################## Input processing functions
 ################################################################################
@@ -96,12 +95,14 @@ def sample_off_multi(xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
 
-def PBC(dist, length):
+def PBC(dist, Lx, Ly, Lz):
     '''
     Correct a distance using Periodic Boundary Conditions (PBC).
     '''
 
-    return dist - length * int(2*dist/length)
+    return array([dist[0] - Lx * int(2*dist[0]/Lx), 
+                   dist[1] - Ly * int(2*dist[1]/Ly),
+                   dist[2] - Lz * int(2*dist[2]/Lz)])
 
 def sample_on_mono(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
     '''
@@ -109,27 +110,13 @@ def sample_on_mono(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt):
     '''
 
     Rcut2 = Rcut * Rcut
-
-    rx1 = array(xyz[:,1])
-    ry1 = array(xyz[:,2])
-    rz1 = array(xyz[:,3])
-
-    rx2 = array(xyz[:,1])
-    ry2 = array(xyz[:,2])
-    rz2 = array(xyz[:,3])
+    r = xyz[:, 1:]
 
     for i in range(nAt):
         for j in range(i+1, nAt):
-            dx = rx1[i] - rx2[j]
-            dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
-
-            dx = PBC(dx, Lx)
-            dy = PBC(dy, Ly)
-            dz = PBC(dz, Lz)
-
-            d2 = dx**2 + dy**2 + dz**2
-
+            d2 = r[i] - r[j]
+            d2 = PBC(d2, Lx, Ly, Lz)
+            d2 = inner(d2, d2)
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
 
@@ -139,27 +126,14 @@ def sample_on_multi(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2):
     '''
 
     Rcut2 = Rcut * Rcut
-
-    rx1 = array(xyz1[:,1])
-    ry1 = array(xyz1[:,2])
-    rz1 = array(xyz1[:,3])
-
-    rx2 = array(xyz2[:,1])
-    ry2 = array(xyz2[:,2])
-    rz2 = array(xyz2[:,3])
+    r1 = xyz1[:, 1:]
+    r2 = xyz2[:, 1:]
 
     for i in range(nAt1):
         for j in range(nAt2):
-            dx = rx1[i] - rx2[j]
-            dy = ry1[i] - ry2[j]
-            dz = rz1[i] - rz2[j]
-
-            dx = PBC(dx, Lx)
-            dy = PBC(dy, Ly)
-            dz = PBC(dz, Lz)
-
-            d2 = dx**2 + dy**2 + dz**2
-
+            d2 = r1[i] - r2[j]
+            d2 = PBC(d2, Lx, Ly, Lz)
+            d2 = inner(d2, d2)
             if d2 <= Rcut2:
                 hist_up(sqrt(d2), dr, RDF)
 
@@ -197,6 +171,7 @@ def normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF, output_file)
     RDF *= (2 * volBox) / (nPairs * frames_count)
 
     with open(f'{output_file}.csv', 'w') as f:
+        f.write('0.00, 0.0000\n')
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
             volShell = prefact * (binIdx + 0.5)**2
@@ -216,6 +191,7 @@ def normalize_on_multi(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count, RDF,
     RDF *= (2 * volBox) / (nPairs * frames_count)
 
     with open(f'{output_file}.csv', 'w') as f:
+        f.write('0.00, 0.0000\n')
         for binIdx in range(nBin):
             r = (binIdx + 0.5) * dr
             volShell = prefact * (binIdx + 0.5)**2

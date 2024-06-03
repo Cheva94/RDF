@@ -42,20 +42,31 @@ def main():
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
+            nAtSlab = 0
 
             frames_end = args.frames[1]
             if frames_end == -1:
                 frames_end = frames_total
 
+            Hmax = args.Hcut[1]
+            if Hmax == -1:
+                Hmax = Lz
+
+            print(f'\tCantidad de frames: {frames_end-frames_start}.')
+
             for frame in range(frames_start, frames_end):
+                if frames_count % 1000 == 0:
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%    |    {strftime("%H:%M:%S")}')
+
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
-                xyz = xyz[xyz['idAt'] == at].to_numpy()
+                xyz = xyz[(xyz['idAt'] == at) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
                 sample_on_mono(Lx, Ly, Lz, xyz, dr, Rcut, RDF, nAt)
                 frames_count += 1
+                nAtSlab += nAt
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at}-{at}_PBC'
+                output_file = f'RDF3D_{at}-{at}_PBC_dr-{dr:.1f}_Rcut-{Rcut:.1f}_Hcut-{Hmin:.1f}-{Hmax:.1f}'
 
             normalize_on_mono(Lx, Ly, Lz, nAt, dr, nBin, frames_count, RDF,
                                 output_file)
@@ -79,21 +90,38 @@ def main():
             nBin, Rcut, RDF = hist_init(Rcut, dr)
 
             rows = nAtTot + 2
+            nAtSlab1 = 0
+            nAtSlab2 = 0
 
             frames_end = args.frames[1]
             if frames_end == -1:
                 frames_end = frames_total
 
+            Hmax = args.Hcut[1]
+            if Hmax == -1:
+                Hmax = Lz
+
+            print(f'\tCantidad de frames: {frames_end-frames_start}.')
+            print(f'\t\tCantidad total de {at1}: {nAt1}.')
+            print(f'\t\tCantidad total de {at2}: {nAt2}.')
+
             for frame in range(frames_start, frames_end):
+                if frames_count % 1000 == 0:
+                    print(f'\t\t\t# Frame = {frames_count} >>> {100*(frames_count)/frames_end:.2f}%    |    {strftime("%H:%M:%S")}')
+
                 xyz = xyz_all.iloc[(frame * rows + 2) : ((frame + 1) * rows), :]
-                xyz1 = xyz[xyz['idAt'] == at1].to_numpy()
-                xyz2 = xyz[xyz['idAt'] == at2].to_numpy()
+                xyz1 = xyz[(xyz['idAt'] == at1) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
+                xyz2 = xyz[(xyz['idAt'] == at2) & (Hmin <= xyz['rz']) & (xyz['rz'] < Hmax)].to_numpy()
+                nAt1 = len(xyz1)
+                nAt2 = len(xyz2)
                 sample_on_multi(Lx, Ly, Lz, xyz1, xyz2, dr, Rcut, RDF, nAt1, nAt2)
                 frames_count += 1
+                nAtSlab1 += nAt1
+                nAtSlab2 += nAt2
 
             output_file = args.output_file
             if output_file == None:
-                output_file = f'RDF3D_{at1}-{at2}_PBC'
+                output_file = f'RDF3D_{at1}-{at2}_PBC_dr-{dr:.1f}_Rcut-{Rcut:.1f}_z-{Hmin:.1f}-{Hmax:.1f}'
 
             normalize_on_multi(Lx, Ly, Lz, nAt1, nAt2, dr, nBin, frames_count,
                                 RDF, output_file)
